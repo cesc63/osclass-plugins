@@ -1,10 +1,12 @@
 <?php
 
-    require_once('../../../oc-load.php');
-    $code = Params::getParam('code');
-    
-    if($code!='') {
+    define( 'ABS_PATH', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/' ) ;
 
+    require_once( ABS_PATH . 'oc-load.php' ) ;
+
+    $code = Params::getParam('code') ;
+
+    if($code!='') {
         if(preg_match('|(.+)@([A-Za-z0-9\.-]+)$|', $code, $m)) {
             $slug = $m[1];
             $version = $m[2];
@@ -13,9 +15,9 @@
             $version = '';
         }
         
-        $file = ModelUniverse::newInstance()->getFileBySlug($slug, $version);
+        $file = Universe::newInstance()->getFileBySlug($slug, $version);
         if(!empty($file)) {
-            ModelUniverse::newInstance()->insertStat($file['pk_i_id'], @$_SERVER['REMOTE_HOST'], @$_SERVER['REMOTE_ADDR']);
+            Universe::newInstance()->insertStat($file['pk_i_id'], @$_SERVER['REMOTE_HOST'], @$_SERVER['REMOTE_ADDR']) ;
             
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');

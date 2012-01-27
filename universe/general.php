@@ -23,19 +23,19 @@
      switch(Params::getParam('bulk_actions')) {
          case 'disable':
              foreach($id as $_id) {
-                ModelUniverse::newInstance()->disable($_id);
+                Universe::newInstance()->disable($_id);
              }
              break;
          case 'enable':
              foreach($id as $_id) {
-                ModelUniverse::newInstance()->enable($_id);
+                Universe::newInstance()->enable($_id);
              }
              break;
          case 'delete':
              foreach($id as $_id) {
-                 $file = ModelUniverse::newInstance()->findByPrimaryKey($_id);
+                 $file = Universe::newInstance()->findByPrimaryKey($_id);
                  @unlink($file['s_file']);
-                 ModelUniverse::newInstance()->delete($_id);
+                 Universe::newInstance()->delete($_id);
              }
              break;
          default:

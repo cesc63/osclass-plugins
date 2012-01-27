@@ -4,7 +4,7 @@
         default:
             
             $page = Params::getParam('page')==''?0:Params::getParam('page'); 
-            $files = ModelUniverse::newInstance()->getLatest($page);
+            $files = Universe::newInstance()->getLatest($page);
             
             $sOutput = '{';
             $sOutput .= '"iTotalRecords": '.(count($files)).', ';
@@ -17,7 +17,7 @@
                     $tmp = explode("/", $file['s_file']);
                     $filename = end($tmp);
                     
-                    $downloads = ModelUniverse::newInstance()->getDownloads($file['pk_i_id']);
+                    $downloads = Universe::newInstance()->getDownloads($file['pk_i_id']);
                     
                     $sOutput .= "[";
                     $sOutput .= "\"<input type='checkbox' name='id[]' value='".$file['pk_i_id']."' />\",";

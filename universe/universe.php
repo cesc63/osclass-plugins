@@ -1,7 +1,8 @@
 <?php
 
-    require_once('../../../oc-load.php');
-    $code = Params::getParam('code');
+    define( 'ABS_PATH', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/' ) ;
+
+    require_once( ABS_PATH . 'oc-load.php' ) ;
     // to know the version of OSClass
     //$_SERVER['HTTP_USER_AGENT']
     if($code!='') {
@@ -14,18 +15,18 @@
             $version = '';
         }
 
-        if(Params::getParam('files')==1) {
-            $files = ModelUniverse::newInstance()->getFilesBySlug($slug);
+        if( Params::getParam('files') == 1 ) {
+            $files = Universe::newInstance()->getFilesBySlug($slug);
             if(!empty($files)) {
                 foreach($files as $k => $v) {
                     unset($files[$k]['s_file']);
                     $files[$k]['s_source_file'] = osc_market_url($code);
                     $files[$k]['error'] = 0;
                 }
-                echo json_encode($file);exit;
+                echo json_encode($files); exit;
             }
         } else {
-            $file = ModelUniverse::newInstance()->getFileBySlug($slug, $version);
+            $file = Universe::newInstance()->getFileBySlug($slug, $version);
             if(!empty($file)) {
                 unset($file['s_file']);
                 $file['s_source_file'] = osc_market_url($code);
@@ -33,7 +34,6 @@
                 echo json_encode($file);exit;
             }
         }
-        
     }
     
     echo json_encode(array('error' => 1));exit;
