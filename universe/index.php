@@ -13,7 +13,7 @@ Plugin update URI:
     define( 'UNIVERSE_VERSION', 0.1) ;
     define( 'UNIVERSE_PLUGIN_PATH', osc_plugins_path() . 'universe/' ) ;
 
-    require_once( UNIVERSE_PLUGIN_PATH . '/model/Universe.php' ) ;
+    require_once( UNIVERSE_PLUGIN_PATH . '/ModelUniverse.php' ) ;
 
     function universe_install() {
         Universe::newInstance()->import('universe/struct.sql') ;
