@@ -135,19 +135,20 @@
          * Get file by slug
          */
         public function getFileBySlug($slug, $version = '') {
+            
             $this->dao->select();
-            $this->dao->from($this->getTable_Files());
-            $this->dao->where('s_slug', $slug);
-            $this->dao->where('b_enabled', 1);
+            $this->dao->from($this->getTable_Files()." f");
+            $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = f.fk_i_item_id", "LEFT");
+            $this->dao->where('f.s_slug', $slug);
+            $this->dao->where('f.b_enabled', 1);
             if($version!='') {
-                $this->dao->where('s_version', $version);
+                $this->dao->where('f.s_version', $version);
             }
-            $this->dao->orderBy('pk_i_id', 'DESC');
+            $this->dao->orderBy('f.pk_i_id', 'DESC');
             $this->dao->limit(1);
             $result = $this->dao->get() ;
             if($result!==false) {
-                $row = $result->result() ;
-                return $row[0];
+                return $result->row();
             } else {
                 return array();
             }
@@ -329,7 +330,8 @@
          */
         public function getData($type = 'PLUGIN', $page = 0) {
             $this->dao->select();
-            $this->dao->from($this->getTable_Files());
+            $this->dao->from($this->getTable_Files()." f");
+            $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = f.fk_i_item_id", "LEFT");
             $this->dao->where('e_type', $type);
             $this->dao->groupBy('s_slug');
             $this->dao->orderBy('pk_i_id', 'DESC');

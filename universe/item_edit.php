@@ -2,8 +2,8 @@
 <div class="box">
     <div class="box universe_files">
         <div class="row">
-            <label><?php _e('Type','universe'); ?></label>
-            <select name="universe_type">
+            <label for="universe_type"><?php _e('Type','universe'); ?></label>
+            <select name="universe_type" id="universe_type">
                 <option value="PLUGIN" <?php if(@$universe_files[0]['e_type']=='PLUGIN') {echo 'selected="selected"';}; ?>><?php _e('Plugin'); ?></option>
                 <option value="THEME" <?php if(@$universe_files[0]['e_type']=='THEME') {echo 'selected="selected"';}; ?>><?php _e('Theme'); ?></option>
                 <option value="LANGUAGE" <?php if(@$universe_files[0]['e_type']=='LANGUAGE') {echo 'selected="selected"';}; ?>><?php _e('Language'); ?></option>

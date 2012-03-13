@@ -16,20 +16,22 @@ Plugin update URI:
     require_once( UNIVERSE_PLUGIN_PATH . '/ModelUniverse.php' ) ;
 
     function universe_install() {
-        Universe::newInstance()->import('universe/struct.sql') ;
-        @mkdir(osc_content_path().'uploads/universe/');
+        ModelUniverse::newInstance()->import('universe/struct.sql') ;
+        if(!is_dir(osc_content_path().'uploads/universe/')) {
+            @mkdir(osc_content_path().'uploads/universe/');
+        }
         osc_set_preference('upload_path', osc_content_path().'uploads/universe/', 'universe', 'STRING');
         osc_set_preference('allowed_ext', 'zip', 'universe', 'INTEGER');
     }
 
     function universe_uninstall() {
         try {
-            $files = Universe::newInstance()->getFiles();
+            $files = ModelUniverse::newInstance()->getFiles();
             foreach($files as $file) {
                 @unlink(osc_get_preference('upload_path', 'universe').$file['s_file']) ;
             }
             rmdir( osc_get_preference('upload_path','universe') ) ;
-            Universe::newInstance()->uninstall();
+            ModelUniverse::newInstance()->uninstall();
             osc_delete_preference('upload_path', 'universe') ;
             osc_delete_preference('allowed_ext', 'universe') ;
         } catch (Exception $e) {
@@ -68,14 +70,14 @@ Plugin update URI:
 
     function universe_item_detail() {
         if(osc_is_this_category('universe', osc_item_category_id())) {
-            $universe_files = Universe::newInstance()->getFilesFromItem(osc_item_id());
+            $universe_files = ModelUniverse::newInstance()->getFilesFromItem(osc_item_id());
             require_once( UNIVERSE_PLUGIN_PATH . 'item_detail.php' );
         }
     }
 
     function universe_item_edit($catId = null, $item_id = null) {
         if( osc_is_this_category('universe', $catId) ) {
-            $universe_files = Universe::newInstance()->getFilesFromItem($item_id);
+            $universe_files = ModelUniverse::newInstance()->getFilesFromItem($item_id);
             $universe_item = Item::newInstance()->findByPrimaryKey($item_id);
             $secret = $universe_item['s_secret'];
             unset($universe_item);
@@ -91,7 +93,7 @@ Plugin update URI:
                 if($_slug!='') {
                     $slug = $_slug;
                 } else {
-                    $ufiles = Universe::newInstance()->getFilesFromItem($item_id);
+                    $ufiles = ModelUniverse::newInstance()->getFilesFromItem($item_id);
                     if(isset($ufiles[0]) && isset($ufiles[0]['s_slug'])) {
                         $slug = $ufiles[0]['s_slug'];
                     } else {
@@ -113,11 +115,11 @@ Plugin update URI:
                 if(is_array($versions)) {
                     if(osc_is_admin_user_logged_in()) {
                         foreach($versions as $k => $v) {
-                            Universe::newInstance()->updateFile($item_id, $k, array('s_version' => $v, 'b_enabled' => (isset($enables[$k]) && $enables[$k]==1)?1:0));
+                            ModelUniverse::newInstance()->updateFile($item_id, $k, array('s_version' => $v, 'b_enabled' => (isset($enables[$k]) && $enables[$k]==1)?1:0));
                         }
                     } else {
                         foreach($versions as $k => $v) {
-                            Universe::newInstance()->updateFile($item_id, $k, array('s_version' => $v));
+                            ModelUniverse::newInstance()->updateFile($item_id, $k, array('s_version' => $v));
                         }
                     }
                 }
@@ -152,7 +154,7 @@ Plugin update URI:
                             $file_name = $date.'_'.$item_id.'_'.$file['name'];
                             $path = osc_get_preference('upload_path', 'universe').$file_name;
                             if (move_uploaded_file($file['tmp_name'], $path)) {
-                                $failed = Universe::newInstance()->insertFile(array('fk_i_item_id' => $item_id, 's_file' => $path, 's_version' => Params::getParam('universe_version_new')));
+                                $failed = ModelUniverse::newInstance()->insertFile(array('fk_i_item_id' => $item_id, 's_file' => $path, 's_version' => Params::getParam('universe_version_new')));
                             } else {
                                 $failed = true;
                             }
@@ -163,17 +165,17 @@ Plugin update URI:
                         $failed = true;
                     }
                     if($failed) {
-                        osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'universe'),'admin');
+                        osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'universe'));
                     }
                 }
                 $utype = Params::getParam('universe_type');
-                Universe::newInstance()->updateFilesFromItem($item_id, array('s_slug' => $slug, 'e_type' => ($utype==''?'PLUGIN':$utype)));
+                ModelUniverse::newInstance()->updateFilesFromItem($item_id, array('s_slug' => $slug, 'e_type' => ($utype==''?'PLUGIN':$utype)));
             }
         }
     }
 
     function universe_delete_item($item) {
-        $files = Universe::newInstance()->getFilesFromItem($item);
+        $files = ModelUniverse::newInstance()->getFilesFromItem($item);
         
     }
 
