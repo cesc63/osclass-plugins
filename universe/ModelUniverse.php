@@ -332,9 +332,10 @@
             $this->dao->select();
             $this->dao->from($this->getTable_Files()." f");
             $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = f.fk_i_item_id", "LEFT");
-            $this->dao->where('e_type', $type);
-            $this->dao->groupBy('s_slug');
-            $this->dao->orderBy('pk_i_id', 'DESC');
+            $this->dao->where('f.e_type', $type);
+            $this->dao->where('f.b_enabled', 1);
+            $this->dao->groupBy('f.s_slug');
+            $this->dao->orderBy('f.pk_i_id', 'DESC');
             $this->dao->limit($page, 5);
             $result = $this->dao->get() ;
             if($result!==false) {

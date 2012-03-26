@@ -44,7 +44,6 @@ Plugin update URI:
         <ul> 
             <li><a href="' . osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'conf.php') . '">&raquo; ' . __('Settings', 'universe') . '</a></li>
             <li><a href="'.osc_admin_configure_plugin_url("universe/index.php").'">&raquo; ' . __('Configure categories', 'universe') . '</a></li>
-            <li><a href="' . osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'general.php') . '">&raquo; ' . __('Overview', 'universe') . '</a></li>
             <li><a href="' . osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php') . '">&raquo; ' . __('Stats', 'universe') . '</a></li>
         </ul>' ;
     }
