@@ -16,9 +16,9 @@ Plugin update URI:
     function subscribe_install() {
         $dbCommand = get_dbCommand() ;
 
-        $file = osc_plugin_resource('subscribe/struct.sql') ;
-        if( !$dbCommand->importSQL($file) ) {
-            throw new Exception( $this->dao->getErrorLevel() . ' - ' . $this->dao->getErrorDesc() ) ;
+        $sql = file_get_contents( osc_plugin_resource('subscribe/private/struct.sql') ) ;
+        if( !$dbCommand->importSQL($sql) ) {
+            throw new Exception( $dbCommand->getErrorLevel() . ' - ' . $dbCommand->getErrorDesc() ) ;
         }
     }
     osc_register_plugin(osc_plugin_path(__FILE__), 'subscribe_install') ;
