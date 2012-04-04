@@ -112,12 +112,18 @@ Plugin update URI:
      * @return boolean true on success, false if the email is not inserted in the database
      */
     function subscribe_email() {
-        if( !osc_validate_email(Params::getParam('email')) ) {
+        $email = urldecode( Params::getParam('email') ) ;
+        if( !osc_validate_email($email) ) {
             return -1 ;
         }
 
         $dbCommand = get_dbCommand() ;
-        if( $dbCommand->insert(SUBSCRIBE_TABLE, array('s_email' => Params::getParam('email'))) ) {
+        $aInsert   = array(
+            's_email'        => $email,
+            'd_subscription' => date('Y-m-d'),
+            'c_ip'           => $_SERVER['REMOTE_ADDR']
+        ) ;
+        if( $dbCommand->insert(SUBSCRIBE_TABLE, $aInsert) ) {
             return 1 ;
         }
 
