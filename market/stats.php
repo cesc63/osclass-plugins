@@ -20,9 +20,9 @@
      */
 
     if(Params::getParam('plugin_action')=='done') {
-        osc_set_preference('upload_path', Params::getParam('upload_path'), 'universe', 'STRING');
-        osc_set_preference('allowed_ext', Params::getParam('allowed_ext'), 'universe', 'STRING');
-        echo '<div style="text-align:center; font-size:22px; background-color:#00bb00;"><p>' . __('Congratulations. The plugin is now configured', 'universe') . '.</p></div>' ;
+        osc_set_preference('upload_path', Params::getParam('upload_path'), 'market', 'STRING');
+        osc_set_preference('allowed_ext', Params::getParam('allowed_ext'), 'market', 'STRING');
+        echo '<div style="text-align:center; font-size:22px; background-color:#00bb00;"><p>' . __('Congratulations. The plugin is now configured', 'market') . '.</p></div>' ;
         osc_reset_preferences();
     }
 ?>
@@ -30,7 +30,7 @@
     <div style="padding: 20px;">
         <div style="float: left; width: 100%;">
             <fieldset>
-                <legend><?php _e('Universe Stats', 'universe'); ?></legend>
+                <legend><?php _e('Market Stats', 'market'); ?></legend>
                 SOME COOL STATS HERE, GRAPHS
             </fieldset>
         </div>

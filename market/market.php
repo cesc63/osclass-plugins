@@ -3,7 +3,7 @@
     define( 'ABS_PATH', dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/' ) ;
 
     require_once( ABS_PATH . 'oc-load.php' ) ;
-    //require_once('ModelUniverse.php');
+    //require_once('ModelMarket.php');
 
     $code = Params::getParam('code') ;
 
@@ -17,20 +17,20 @@
         }
 
         if( Params::getParam('files') == 1 ) {
-            $files = ModelUniverse::newInstance()->getFilesBySlug($slug);
+            $files = ModelMarket::newInstance()->getFilesBySlug($slug);
             if( !empty($files) ) {
                 foreach( $files as $k => $v ) {
                     unset($files[$k]['s_file']) ;
-                    $files[$k]['s_source_file'] = osc_base_url() . 'oc-content/plugins/universe/download.php?code=' . $code ;
+                    $files[$k]['s_source_file'] = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $code ;
                     $files[$k]['error'] = 0 ;
                 }
                 echo json_encode($files) ; exit ;
             }
         } else {
-            $file = ModelUniverse::newInstance()->getFileBySlug($slug, $version) ;
+            $file = ModelMarket::newInstance()->getFileBySlug($slug, $version) ;
             if( !empty($file) ) {
                 unset($file['s_file']) ;
-                $file['s_source_file'] = osc_base_url() . 'oc-content/plugins/universe/download.php?code=' . $code ;
+                $file['s_source_file'] = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $code ;
                 $file['error'] = 0;
                 echo json_encode($file) ; exit ;
             }
@@ -40,7 +40,7 @@
         $section = Params::getParam('section');
         $page = Params::getParam('page')==''?0:Params::getParam('page');
         
-        $mUni = ModelUniverse::newInstance();
+        $mUni = ModelMarket::newInstance();
         
         switch($section) {
             case 'search':

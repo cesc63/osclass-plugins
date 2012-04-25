@@ -4,7 +4,7 @@
         default:
             
             $page = Params::getParam('page')==''?0:Params::getParam('page'); 
-            $files = Universe::newInstance()->getLatest($page);
+            $files = ModelMarket::newInstance()->getLatest($page);
             
             $sOutput = '{';
             $sOutput .= '"iTotalRecords": '.(count($files)).', ';
@@ -17,19 +17,19 @@
                     $tmp = explode("/", $file['s_file']);
                     $filename = end($tmp);
                     
-                    $downloads = Universe::newInstance()->getDownloads($file['pk_i_id']);
+                    $downloads = ModelMarket::newInstance()->getDownloads($file['pk_i_id']);
                     
                     $sOutput .= "[";
                     $sOutput .= "\"<input type='checkbox' name='id[]' value='".$file['pk_i_id']."' />\",";
                     $sOutput .= "\"".$file['s_slug']."\",";
                     $sOutput .= "\"".$file['s_version']."\",";
                     if($file['b_enabled']==1) {
-                        $sOutput .= "\"".__('ENABLED', 'universe')." <a href='".osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'general.php')."&paction=disable&id[]=".$file['pk_i_id']."'>(".__('disable', 'universe').")</a>\",";
+                        $sOutput .= "\"".__('ENABLED', 'market')." <a href='".osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'general.php')."&paction=disable&id[]=".$file['pk_i_id']."'>(".__('disable', 'market').")</a>\",";
                     } else {
-                        $sOutput .= "\"".__('DISABLED', 'universe')." <a href='".osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'general.php')."&paction=enable&id[]=".$file['pk_i_id']."'>(".__('enable', 'universe').")</a>\",";
+                        $sOutput .= "\"".__('DISABLED', 'market')." <a href='".osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'general.php')."&paction=enable&id[]=".$file['pk_i_id']."'>(".__('enable', 'market').")</a>\",";
                     }
                     $sOutput .= "\"<a href='".osc_item_url_ns($file['fk_i_item_id'])."'>item #".$file['fk_i_item_id']."</a>\",";
-					$sOutput .= "\"<a href='".osc_base_url().'oc-content/uploads/universe/'.$filename."'>".__('Download', 'universe')."</a>\",";
+					$sOutput .= "\"<a href='".osc_base_url().'oc-content/uploads/market/'.$filename."'>".__('Download', 'market')."</a>\",";
 					$sOutput .= "\"".$downloads."\",";
                     $var = 'onclick=\"javascript:return confirm(\''.__('This action can not be undone. Are you sure you want to continue?').'\')\"';
                     $sOutput .= "\"<a ".$var." href='".osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'general.php')."&paction=delete&id[]=".$file['pk_i_id']."' id='dt_link_delete'>".__('Delete')."</a>\",";

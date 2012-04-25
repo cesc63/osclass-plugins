@@ -20,9 +20,9 @@
      */
 
     if(Params::getParam('plugin_action')=='done') {
-        osc_set_preference('upload_path', Params::getParam('upload_path'), 'universe', 'STRING');
-        osc_set_preference('allowed_ext', Params::getParam('allowed_ext'), 'universe', 'STRING');
-        echo '<div style="text-align:center; font-size:22px; background-color:#00bb00;"><p>' . __('Congratulations. The plugin is now configured', 'universe') . '.</p></div>' ;
+        osc_set_preference('upload_path', Params::getParam('upload_path'), 'market', 'STRING');
+        osc_set_preference('allowed_ext', Params::getParam('allowed_ext'), 'market', 'STRING');
+        echo '<div style="text-align:center; font-size:22px; background-color:#00bb00;"><p>' . __('Congratulations. The plugin is now configured', 'market') . '.</p></div>' ;
         osc_reset_preferences();
     }
 ?>
@@ -30,22 +30,22 @@
     <div style="padding: 20px;">
         <div style="float: left; width: 100%;">
             <fieldset>
-                <legend><?php _e('Universe Settings', 'universe'); ?></legend>
-                <form name="universe_form" id="universe_form" action="<?php echo osc_admin_base_url(true); ?>" method="POST" enctype="multipart/form-data" >
+                <legend><?php _e('Market Settings', 'market'); ?></legend>
+                <form name="market_form" id="market_form" action="<?php echo osc_admin_base_url(true); ?>" method="POST" enctype="multipart/form-data" >
                     <div style="float: left; width: 100%;">
                     <input type="hidden" name="page" value="plugins" />
                     <input type="hidden" name="action" value="renderplugin" />
                     <input type="hidden" name="file" value="<?php echo osc_plugin_folder(__FILE__); ?>conf.php" />
                     <input type="hidden" name="plugin_action" value="done" />
-                        <label for="allowed_ext"><?php _e('Allowed filetypes (separated by comma)', 'universe'); ?></label>
+                        <label for="allowed_ext"><?php _e('Allowed filetypes (separated by comma)', 'market'); ?></label>
                         <br/>
-                        <input type="text" name="allowed_ext" id="allowed_ext" value="<?php echo osc_get_preference('allowed_ext', 'universe'); ?>"/>
+                        <input type="text" name="allowed_ext" id="allowed_ext" value="<?php echo osc_get_preference('allowed_ext', 'market'); ?>"/>
                         <br/>
-                        <label for="upload_path"><?php _e('Upload path', 'universe'); ?></label>
+                        <label for="upload_path"><?php _e('Upload path', 'market'); ?></label>
                         <br/>
-                        <input type="text" name="upload_path" id="upload_path" value="<?php echo osc_get_preference('upload_path', 'universe'); ?>"/>
+                        <input type="text" name="upload_path" id="upload_path" value="<?php echo osc_get_preference('upload_path', 'market'); ?>"/>
                         <br/>
-                        <span style="float:right;"><button type="submit" style="float: right;"><?php _e('Update', 'universe');?></button></span>
+                        <span style="float:right;"><button type="submit" style="float: right;"><?php _e('Update', 'market');?></button></span>
                     </div>
                     <br/>
                     <div style="clear:both;"></div>

@@ -15,9 +15,9 @@
             $version = '' ;
         }
 
-        $file = Universe::newInstance()->getFileBySlug($slug, $version) ;
+        $file = ModelMarket::newInstance()->getFileBySlug($slug, $version) ;
         if( !empty($file) ) {
-            Universe::newInstance()->insertStat($file['pk_i_id'], @$_SERVER['REMOTE_HOST'], @$_SERVER['REMOTE_ADDR']) ;
+            ModelMarket::newInstance()->insertStat($file['pk_i_id'], @$_SERVER['REMOTE_HOST'], @$_SERVER['REMOTE_ADDR']) ;
             
             header( 'Content-Description: File Transfer' ) ;
             header( 'Content-Type: application/octet-stream' ) ;
