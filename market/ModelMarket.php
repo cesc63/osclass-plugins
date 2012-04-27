@@ -57,9 +57,17 @@
          */
         function __construct() {
             parent::__construct();
-            $this->setTableName('t_market_files') ;
+            $this->setTableName('t_market') ;
             $this->setPrimaryKey('pk_i_id') ;
-            $this->setFields( array('pk_i_id', 'fk_i_item_id', 's_slug', 's_file', 's_version', 'e_type', 'b_enabled') ) ;
+            $this->setFields( array('pk_i_id', 'fk_i_item_id', 's_slug', 'e_type') ) ;
+        }
+        
+        /**
+         * Return table name market
+         * @return string
+         */
+        public function getTable() {
+            return DB_TABLE_PREFIX.'t_market';
         }
         
         /**
@@ -97,6 +105,7 @@
         public function uninstall() {
             $this->dao->query(sprintf('DROP TABLE %s', $this->getTable_Stats()) ) ;
             $this->dao->query(sprintf('DROP TABLE %s', $this->getTable_Files()) ) ;
+            $this->dao->query(sprintf('DROP TABLE %s', $this->getTable()) ) ;
             $this->dao->delete(sprintf("%st_plugin_category", DB_TABLE_PREFIX), "s_plugin_name = 'market'");
         }
         
@@ -105,9 +114,10 @@
          */
         public function getFileFromItem($item_id) {
             $this->dao->select();
-            $this->dao->from($this->getTable_Files());
-            $this->dao->where('fk_i_item_id', $item_id);
-            $this->dao->orderBy('pk_i_id', 'DESC');
+            $this->dao->from($this->getTable()." m , ".$this->getTable_Files()." f ");
+            $this->dao->where('m.fk_i_item_id', $item_id);
+            $this->dao->where('f.fk_i_market_id = m.pk_i_id');
+            $this->dao->orderBy('m.pk_i_id', 'DESC');
             $this->dao->limit(1);
             $result = $this->dao->get() ;
             if($result!==false) {
@@ -122,24 +132,11 @@
          */
         public function getFilesFromItem($item_id) {
             $this->dao->select();
-            $this->dao->from($this->getTable_Files());
-            $this->dao->where('fk_i_item_id', $item_id);
-            $this->dao->orderBy('pk_i_id', 'DESC');
-            $result = $this->dao->get() ;
-            if($result!==false) {
-                return $result->result() ;
-            } else {
-                return array();
-            }
-        } 
-        
-        /**
-         * Get files
-         */
-        public function getFiles() {
-            $this->dao->select();
-            $this->dao->from($this->getTable_Files());
-            $this->dao->orderBy('pk_i_id', 'DESC');
+            $this->dao->from($this->getTable()." m");
+            $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
+            $this->dao->where('m.fk_i_item_id', $item_id);
+            $this->dao->orderBy('m.pk_i_id', 'DESC');
+            $this->dao->limit(1);
             $result = $this->dao->get() ;
             if($result!==false) {
                 return $result->result() ;
@@ -154,9 +151,10 @@
         public function getFileBySlug($slug, $version = '') {
             
             $this->dao->select();
-            $this->dao->from($this->getTable_Files()." f");
+            $this->dao->from($this->getTable()." m");
+            $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
             $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = f.fk_i_item_id", "LEFT");
-            $this->dao->where('f.s_slug', $slug);
+            $this->dao->where('m.s_slug', $slug);
             $this->dao->where('f.b_enabled', 1);
             if($version!='') {
                 $this->dao->where('f.s_version', $version);
@@ -176,10 +174,11 @@
          */
         public function getFilesBySlug($slug) {
             $this->dao->select();
-            $this->dao->from($this->getTable_Files());
-            $this->dao->where('s_slug', $slug);
-            $this->dao->where('b_enabled', 1);
-            $this->dao->orderBy('pk_i_id', 'DESC');
+            $this->dao->from($this->getTable()." m");
+            $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
+            $this->dao->where('m.s_slug', $slug);
+            $this->dao->where('f.b_enabled', 1);
+            $this->dao->orderBy('f.pk_i_id', 'DESC');
             $result = $this->dao->get() ;
             if($result!==false) {
                 return $result->result() ;
@@ -189,26 +188,51 @@
         } 
         
         /**
+         * Check if the file already exists in the market
+         */
+        public function marketExists($item_id) {
+            $this->dao->select();
+            $this->dao->from($this->getTable());
+            $this->dao->where('fk_i_item_id', $item_id);
+            $result = $this->dao->get() ;
+            if($result!==false) {
+                $row = $result->row();
+                if(empty($row)) {
+                    return false;
+                } else {
+                    return true;
+                };
+            } else {
+                return false;
+            }
+        }
+        
+        /**
+         * Insert new market
+         */
+        public function insertMarket($item_id, $slug) {
+            $this->insert(array('fk_i_item_id' => $item_id, 's_slug' => $slug));
+            return $this->dao->insertedId();
+        }
+        
+        /**
          * Insert new file
          */
-        public function insertFile($aSet) {
-            return $this->dao->insert( $this->getTable_Files(), $aSet);
+        public function insertFile($market_id, $path, $version, $comp_versions) {
+            return $this->dao->insert( $this->getTable_Files(), array(
+                'fk_i_market_id' => $market_id,
+                's_file' => $path,
+                's_version' => $version,
+                's_compatible' => implode(",", $comp_versions),
+                'b_enabled' => 0
+            ));
         }
        
         /**
          * Update a file
          */
-        public function updateFile($item_id, $pk_i_id, $aSet) {
-            if(!is_numeric($item_id) || !is_numeric($pk_i_id)) { return false; };
-            return $this->dao->update( $this->getTable_Files(), $aSet, 'pk_i_id = '.$pk_i_id.' AND fk_i_item_id = '.$item_id);
-        }
-        
-        /**
-         * Update a file
-         */
-        public function updateFilesFromItem($item_id, $aSet) {
-            if(!is_numeric($item_id)) { return false; };
-            return $this->dao->update( $this->getTable_Files(), $aSet, 'fk_i_item_id = '.$item_id);
+        public function updateFile($market_id, $pk_i_id, $aSet) {
+            return $this->dao->update( $this->getTable_Files(), $aSet, 'pk_i_id = '.$pk_i_id.' AND fk_i_market_id = '.$market_id);
         }
         
         /**
@@ -219,7 +243,8 @@
                 return false;
             }
             $this->dao->delete($this->getTable_Stats(), 'fk_i_market_id = '.$id);
-            return $this->dao->delete($this->getTable_Files(), 'pk_i_id = '.$id);
+            $this->dao->delete($this->getTable_Files(), 'fk_i_market_id = '.$id);
+            return $this->dao->delete($this->getTable(), 'pk_i_id = '.$id);
         }
         
         /*
@@ -227,7 +252,7 @@
          */
         public function checkSlug($slug, $item_id) {
             $this->dao->select();
-            $this->dao->from($this->getTable_Files());
+            $this->dao->from($this->getTable());
             $this->dao->where('fk_i_item_id != '. $item_id);
             $this->dao->where('s_slug', $slug);
             $result = $this->dao->get() ;
@@ -255,12 +280,13 @@
          */
         public function getLatest($page = 0) {
             $this->dao->select();
-            $this->dao->from($this->getTable_Files());
-            $this->dao->orderBy('pk_i_id', 'DESC');
+            $this->dao->from($this->getTable()." m");
+            $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
+            $this->dao->orderBy('m.pk_i_id', 'DESC');
             $this->dao->limit($page, 20);
             $result = $this->dao->get() ;
             if($result!==false) {
-                return $result->result();
+                return $result->result() ;
             } else {
                 return array();
             }
@@ -347,11 +373,11 @@
          */
         public function getData($type = 'PLUGIN', $page = 0) {
             $this->dao->select();
-            $this->dao->from($this->getTable_Files()." f");
+            $this->dao->from($this->getTable()." m");
+            $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
             $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = f.fk_i_item_id", "LEFT");
-            $this->dao->where('f.e_type', $type);
             $this->dao->where('f.b_enabled', 1);
-            $this->dao->groupBy('f.s_slug');
+            $this->dao->groupBy('m.s_slug');
             $this->dao->orderBy('f.pk_i_id', 'DESC');
             $this->dao->limit($page, 5);
             $result = $this->dao->get() ;

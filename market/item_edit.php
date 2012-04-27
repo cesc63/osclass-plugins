@@ -1,13 +1,8 @@
+<?php $market_versions = explode(",", osc_get_preference('compatible_versions', 'market')); ?>
 <h2><?php _e("Market", 'market') ; ?></h2>
 <div class="box">
     <div class="box market_files">
         <div class="row">
-            <label for="market_type"><?php _e('Type','market'); ?></label>
-            <select name="market_type" id="market_type">
-                <option value="PLUGIN" <?php if(@$market_files[0]['e_type']=='PLUGIN') {echo 'selected="selected"';}; ?>><?php _e('Plugin'); ?></option>
-                <option value="THEME" <?php if(@$market_files[0]['e_type']=='THEME') {echo 'selected="selected"';}; ?>><?php _e('Theme'); ?></option>
-                <option value="LANGUAGE" <?php if(@$market_files[0]['e_type']=='LANGUAGE') {echo 'selected="selected"';}; ?>><?php _e('Language'); ?></option>
-            </select>
             <?php if(osc_is_admin_user_logged_in()) { ?> 
             <br/>
             <label><?php _e('Slug','market'); ?></label>
@@ -24,10 +19,15 @@
                             <label><?php _e('Version','market'); ?></label>
                             <input type="text" name="market_version[<?php echo $_r['pk_i_id']; ?>]" id="market_version_<?php echo $_r['pk_i_id']; ?>" value="<?php echo $_r['s_version']; ?>" />
                             <br/>
-                            <a href="javascript:delete_market_file(<?php echo $_r['pk_i_id'] . ", " . $_r['fk_i_item_id'] . "', '" . $secret . "'" ;?>);"  class="delete"><?php _e('Delete', 'market') ; ?></a><br/>
+                            <?php foreach($market_versions as $v) { ?>
+                                <input type="checkbox" <?php echo ( market_is_checked($v, $_r['s_compatible']) ? 'checked="checked"' : '' ) ; ?> name="market_comp_versions[<?php echo $_r['pk_i_id']; ?>][<?php echo $v; ?>]" value="1" />
+                                <?php echo $v; ?>
+                            <?php }; ?>
                             <?php if(osc_is_admin_user_logged_in()) { ?> 
                             <label><?php _e('Enabled', 'market'); ?></label><input type="checkbox" name="market_enabled[<?php echo $_r['pk_i_id']; ?>]" value="1" <?php if($_r['b_enabled']==1){ echo 'checked'; };?>/>
                             <?php }; ?>
+                            <br/>
+                            <a href="javascript:delete_market_file(<?php echo $_r['pk_i_id'] . ", " . $_r['fk_i_item_id'] . "', '" . $secret . "'" ;?>);"  class="delete"><?php _e('Delete', 'market') ; ?></a><br/>
                             </p>
                     </div>
                 <?php }
@@ -41,6 +41,13 @@
                 <br/>
                 <label><?php _e('Version','market'); ?></label>
                 <input type="text" name="market_version_new" id="market_version_new" value="" />
+                <br/>
+                <label><?php _e('Compatible with', 'market'); ?></label>
+                <br/>
+                <?php foreach($market_versions as $v) { ?>
+                    <input type="checkbox" name="market_new_comp_versions[<?php echo $v; ?>]" value="1" />
+                    <?php echo $v; ?>
+                <?php }; ?>
             </div>
         </div>
     </div>

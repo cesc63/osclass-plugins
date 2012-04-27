@@ -26,11 +26,7 @@ Plugin update URI:
 
     function market_uninstall() {
         try {
-            $files = ModelMarket::newInstance()->getFiles();
-            foreach($files as $file) {
-                @unlink(osc_get_preference('upload_path', 'market').$file['s_file']) ;
-            }
-            rmdir( osc_get_preference('upload_path','market') ) ;
+            osc_deleteDir(osc_get_preference('upload_path','market'));
             ModelMarket::newInstance()->uninstall();
             osc_delete_preference('upload_path', 'market') ;
             osc_delete_preference('allowed_ext', 'market') ;
@@ -51,6 +47,16 @@ Plugin update URI:
     function market_redirect_to($url) {
         header('Location: ' . $url);
         exit;
+    }
+    
+    function market_is_checked($version, $versions) {
+        $versions = explode(",", $versions);
+        foreach($versions as $v) {
+            if($version==$v) {
+                return true;
+            }
+        }
+        return false;
     }
     
     function market_configure_link() {
@@ -88,40 +94,49 @@ Plugin update URI:
 
         if($catId!=null) {
             if(osc_is_this_category('market', $catId)) {
+                
+                $market = ModelMarket::newInstance();
+                
+                // CREATE SLUG
                 $_slug = Params::getParam('market_slug');
                 if($_slug!='') {
                     $slug = $_slug;
                 } else {
-                    $ufiles = ModelMarket::newInstance()->getFilesFromItem($item_id);
-                    if(isset($ufiles[0]) && isset($ufiles[0]['s_slug'])) {
-                        $slug = $ufiles[0]['s_slug'];
-                    } else {
-                        View::newInstance()->_exportVariableToView('item', Item::newInstance()->findByPrimaryKey($item_id));
-                        $slug_tmp = $slug = osc_sanitizeString(osc_item_title());
-                        $slug_unique = 2;
-                        while(true) {
-                            if(Market::newInstance()->checkSlug($slug, $item_id)) {
-                                break;
-                            } else {
-                                $slug = $slug_tmp . "_" . $slug_unique;
-                                $slug_unique++;
-                            }
+                    View::newInstance()->_exportVariableToView('item', Item::newInstance()->findByPrimaryKey($item_id));
+                    $slug_tmp = $slug = osc_sanitizeString(osc_item_title());
+                    $slug_unique = 2;
+                    while(true) {
+                        if($market->checkSlug($slug, $item_id)) {
+                            break;
+                        } else {
+                            $slug = $slug_tmp . "_" . $slug_unique;
+                            $slug_unique++;
                         }
                     }
                 }
+                
+                // NEED TO INSERT NEW FILE?
+                $market_id = $market->marketExists($item_id);
+                if($market_id==false) {
+                    $market_id = $market->insertMarket($item_id, $slug);
+                }
+
+                // UPDATE VERSIONS
                 $versions = Params::getParam('market_version');
                 $enables = Params::getParam('market_enabled');
                 if(is_array($versions)) {
-                    if(osc_is_admin_user_logged_in()) {
+                    if(OC_ADMIN) {
                         foreach($versions as $k => $v) {
-                            ModelMarket::newInstance()->updateFile($item_id, $k, array('s_version' => $v, 'b_enabled' => (isset($enables[$k]) && $enables[$k]==1)?1:0));
+                            $market->updateFile($market_id, $k, array('s_version' => $v, 'b_enabled' => (isset($enables[$k]) && $enables[$k]==1)?1:0));
                         }
                     } else {
                         foreach($versions as $k => $v) {
-                            ModelMarket::newInstance()->updateFile($item_id, $k, array('s_version' => $v));
+                            $market->updateFile($market_id, $k, array('s_version' => $v));
                         }
                     }
                 }
+                
+                // UPLOAD NEW FILE
                 $file = Params::getFiles('market_file_new');
                 if (isset($file['error']) && $file['error'] == UPLOAD_ERR_OK) {
                     require LIB_PATH . 'osclass/mimes.php';
@@ -153,7 +168,7 @@ Plugin update URI:
                             $file_name = $date.'_'.$item_id.'_'.$file['name'];
                             $path = osc_get_preference('upload_path', 'market').$file_name;
                             if (move_uploaded_file($file['tmp_name'], $path)) {
-                                $failed = ModelMarket::newInstance()->insertFile(array('fk_i_item_id' => $item_id, 's_file' => $path, 's_version' => Params::getParam('market_version_new')));
+                                $failed = $market->insertFile($market_id, $path, Params::getParam('market_version_new'), Params::getParam('market_new_comp_versions'));
                             } else {
                                 $failed = true;
                             }
@@ -164,18 +179,19 @@ Plugin update URI:
                         $failed = true;
                     }
                     if($failed) {
-                        osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'market'));
+                        if(OC_ADMIN) {
+                            osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'market'), 'admin');
+                        } else {
+                            osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'market'));
+                        }
                     }
                 }
-                $utype = Params::getParam('market_type');
-                ModelMarket::newInstance()->updateFilesFromItem($item_id, array('s_slug' => $slug, 'e_type' => ($utype==''?'PLUGIN':$utype)));
             }
         }
     }
 
     function market_delete_item($item) {
         $files = ModelMarket::newInstance()->getFilesFromItem($item);
-        
     }
 
     /**

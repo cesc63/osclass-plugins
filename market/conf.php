@@ -22,6 +22,7 @@
     if(Params::getParam('plugin_action')=='done') {
         osc_set_preference('upload_path', Params::getParam('upload_path'), 'market', 'STRING');
         osc_set_preference('allowed_ext', Params::getParam('allowed_ext'), 'market', 'STRING');
+        osc_set_preference('compatible_versions', Params::getParam('compatible_versions'), 'market', 'STRING');
         echo '<div style="text-align:center; font-size:22px; background-color:#00bb00;"><p>' . __('Congratulations. The plugin is now configured', 'market') . '.</p></div>' ;
         osc_reset_preferences();
     }
@@ -44,6 +45,10 @@
                         <label for="upload_path"><?php _e('Upload path', 'market'); ?></label>
                         <br/>
                         <input type="text" name="upload_path" id="upload_path" value="<?php echo osc_get_preference('upload_path', 'market'); ?>"/>
+                        <br/>
+                        <label for="compatible_versions"><?php _e('Compatible versions (separated by commas)', 'market'); ?></label>
+                        <br/>
+                        <input type="text" name="compatible_versions" id="compatible_versions" value="<?php echo osc_get_preference('compatible_versions', 'market'); ?>"/>
                         <br/>
                         <span style="float:right;"><button type="submit" style="float: right;"><?php _e('Update', 'market');?></button></span>
                     </div>
