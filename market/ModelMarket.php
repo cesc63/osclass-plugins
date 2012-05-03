@@ -59,7 +59,7 @@
             parent::__construct();
             $this->setTableName('t_market') ;
             $this->setPrimaryKey('pk_i_id') ;
-            $this->setFields( array('pk_i_id', 'fk_i_item_id', 's_slug', 'e_type') ) ;
+            $this->setFields( array('pk_i_id', 'fk_i_item_id', 's_slug', 's_banner') ) ;
         }
         
         /**
@@ -109,6 +109,19 @@
             $this->dao->delete(sprintf("%st_plugin_category", DB_TABLE_PREFIX), "s_plugin_name = 'market'");
         }
         
+        public function findByItemId($item_id) {
+            $this->dao->select();
+            $this->dao->from($this->getTable());
+            $this->dao->where('fk_i_item_id', $item_id);
+            $this->dao->limit(1);
+            $result = $this->dao->get() ;
+            if($result!==false) {
+                return $result->row() ;
+            } else {
+                return array();
+            }
+        }
+        
         /**
          * Get last file from an item
          */
@@ -136,7 +149,6 @@
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
             $this->dao->where('m.fk_i_item_id', $item_id);
             $this->dao->orderBy('m.pk_i_id', 'DESC');
-            $this->dao->limit(1);
             $result = $this->dao->get() ;
             if($result!==false) {
                 return $result->result() ;
@@ -200,7 +212,7 @@
                 if(empty($row)) {
                     return false;
                 } else {
-                    return true;
+                    return $row['pk_i_id'];
                 };
             } else {
                 return false;
@@ -219,11 +231,15 @@
          * Insert new file
          */
         public function insertFile($market_id, $path, $version, $comp_versions) {
+            $versions = array();
+            foreach($comp_versions as $k => $v) {
+                $versions[] = $k;
+            };
             return $this->dao->insert( $this->getTable_Files(), array(
                 'fk_i_market_id' => $market_id,
                 's_file' => $path,
                 's_version' => $version,
-                's_compatible' => implode(",", $comp_versions),
+                's_compatible' => implode(",", $versions),
                 'b_enabled' => 0
             ));
         }
@@ -238,13 +254,30 @@
         /**
          * Delete a file
          */
-        public function deleteFile($id) {
-            if(!is_numeric($id)) {
+        public function deleteFile($id, $item, $secret) {
+            if(!is_numeric($id) || !is_numeric($item)) {
                 return false;
             }
-            $this->dao->delete($this->getTable_Stats(), 'fk_i_market_id = '.$id);
-            $this->dao->delete($this->getTable_Files(), 'fk_i_market_id = '.$id);
-            return $this->dao->delete($this->getTable(), 'pk_i_id = '.$id);
+            
+            $this->dao->select();
+            $this->dao->from($this->getTable()." m");
+            $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
+            $this->dao->where('m.fk_i_item_id', $item);
+            $this->dao->where('f.pk_i_id', $id);
+            $result = $this->dao->get() ;
+
+            if($result!==false && $result->numRows()==0) {
+                return false;
+            }
+
+            $item = Item::newInstance()->findByPrimaryKey($item);
+
+            if($secret!=$item['s_secret']) {
+                return false;
+            }
+            
+            $this->dao->delete($this->getTable_Stats(), 'fk_i_file_id = '.$id);
+            return $this->dao->delete($this->getTable_Files(), 'pk_i_id = '.$id);
         }
         
         /*

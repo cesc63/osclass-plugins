@@ -6,13 +6,13 @@
             <?php if(osc_is_admin_user_logged_in()) { ?> 
             <br/>
             <label><?php _e('Slug','market'); ?></label>
-            <input type="text" name="market_slug" id="market_slug" value="<?php echo @$market_files[0]['s_slug']; ?>" />
+            <input type="text" name="market_slug" id="market_slug" value="<?php echo @$market['s_slug']; ?>" />
             <?php }; ?>
         </div>
             <?php
             if($market_files != null && is_array($market_files) && count($market_files) > 0) {
                 foreach($market_files as $_r) { ?>
-                    <div id="<?php echo $_r['pk_i_id'] ; ?>" fkid="<?php echo $_r['fk_i_item_id'];?>" name="<?php echo $_r['s_name'];?>">
+                    <div id="<?php echo $_r['pk_i_id']."_".$_r['fk_i_item_id'];?>">
                         <?php $tmp = explode("/", $_r['s_file']);?>
                         <p><?php echo $tmp[count($tmp)-1] ; ?> 
                             <br/>
@@ -27,7 +27,7 @@
                             <label><?php _e('Enabled', 'market'); ?></label><input type="checkbox" name="market_enabled[<?php echo $_r['pk_i_id']; ?>]" value="1" <?php if($_r['b_enabled']==1){ echo 'checked'; };?>/>
                             <?php }; ?>
                             <br/>
-                            <a href="javascript:delete_market_file(<?php echo $_r['pk_i_id'] . ", " . $_r['fk_i_item_id'] . "', '" . $secret . "'" ;?>);"  class="delete"><?php _e('Delete', 'market') ; ?></a><br/>
+                            <a href="javascript:delete_market_file(<?php echo $_r['pk_i_id'] . ", " . $_r['fk_i_item_id'] . ", '" . $secret . "'" ;?>);"  class="delete"><?php _e('Delete', 'market') ; ?></a><br/>
                             </p>
                     </div>
                 <?php }
@@ -50,6 +50,17 @@
                 <?php }; ?>
             </div>
         </div>
+        <div id="market_banner">
+            <div class="row">
+                <p><?php _e('Upload a banner', 'market') ; ?></p>
+            </div>
+            <?php if(isset($market['s_banner']) && $market['s_banner']!='') { ?>
+            <img src="<?php echo osc_base_url()."oc-content/uploads/market/".$market['s_banner']; ?>" />
+            <?php }; ?>
+            <div class="row">
+                <input type="file" name="market_banner" />
+            </div>
+        </div>
     </div>
 </div>
 <script type="text/javascript">
@@ -67,16 +78,14 @@
         if(result) {
             $.ajax({
                 type: "POST",
-                url: '<?php echo osc_base_url(true); ?>?page=ajax&action=custom&ajaxfile=<?php echo osc_plugin_folder(__FILE__) . 'ajax.php';?>&id='+id+'&item='+item_id+'&secret='+secret,
+                url: '<?php echo osc_base_url(true); ?>?page=ajax&action=custom&ajaxfile=<?php echo osc_plugin_folder(__FILE__) . 'ajax.php';?>&paction=delete&id='+id+'&item='+item_id+'&secret='+secret,
                 dataType: 'json',
                 success: function(data){
-                    var class_type = "error";
-                    if(data.success) {
-                        $("div[name="+name+"]").remove();
-                        class_type = "ok";
+                    if(data.error==0) {
+                        $("#"+id+"_"+item_id).remove();
                     }
                     var flash = $("#flash_js");
-                    var message = $('<div>').addClass('pubMessages').addClass(class_type).attr('id', 'FlashMessage').html(data.msg);
+                    var message = $('<div>').addClass('pubMessages').attr('id', 'FlashMessage').html(data.msg);
                     flash.html(message);
                     $("#FlashMessage").slideDown('slow').delay(3000).slideUp('slow');
                 }

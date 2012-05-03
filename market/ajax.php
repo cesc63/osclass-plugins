@@ -1,5 +1,12 @@
 <?php
     switch(Params::getParam('paction')) {
+        case 'delete':
+            if(ModelMarket::newInstance()->deleteFile(Params::getParam('id'), Params::getParam('item'), Params::getParam('secret'))) {
+                echo json_encode(array('msg' => __('File correctly deleted', 'market'), 'error' => 0));
+            } else {
+                echo json_encode(array('msg' => __('File could not be deleted', 'market'), 'error' => 1));
+            }
+            break;
         case 'files':
         default:
             

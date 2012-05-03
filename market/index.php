@@ -83,8 +83,10 @@ Plugin update URI:
     function market_item_edit($catId = null, $item_id = null) {
         if( osc_is_this_category('market', $catId) ) {
             $market_files = ModelMarket::newInstance()->getFilesFromItem($item_id);
+            $market = ModelMarket::newInstance()->findByItemId($item_id);
             $market_item = Item::newInstance()->findByPrimaryKey($item_id);
             $secret = $market_item['s_secret'];
+            
             unset($market_item);
             require_once( MARKET_PLUGIN_PATH . 'item_edit.php' ) ;
         }
@@ -124,14 +126,23 @@ Plugin update URI:
                 // UPDATE VERSIONS
                 $versions = Params::getParam('market_version');
                 $enables = Params::getParam('market_enabled');
+                $comp_versions = Params::getParam('market_comp_versions');
                 if(is_array($versions)) {
                     if(OC_ADMIN) {
                         foreach($versions as $k => $v) {
-                            $market->updateFile($market_id, $k, array('s_version' => $v, 'b_enabled' => (isset($enables[$k]) && $enables[$k]==1)?1:0));
+                            $c_v = array();
+                            foreach($comp_versions[$k] as $kk => $vv) {
+                                $c_v[] = $kk;
+                            }
+                            $market->updateFile($market_id, $k, array('s_version' => implode(",", $c_v), 'b_enabled' => (isset($enables[$k]) && $enables[$k]==1)?1:0));
                         }
                     } else {
                         foreach($versions as $k => $v) {
-                            $market->updateFile($market_id, $k, array('s_version' => $v));
+                            $c_v = array();
+                            foreach($comp_versions[$k] as $kk => $vv) {
+                                $c_v[] = $kk;
+                            }
+                            $market->updateFile($market_id, $k, array('s_version' => implode(",", $c_v)));
                         }
                     }
                 }
@@ -170,21 +181,84 @@ Plugin update URI:
                             if (move_uploaded_file($file['tmp_name'], $path)) {
                                 $failed = $market->insertFile($market_id, $path, Params::getParam('market_version_new'), Params::getParam('market_new_comp_versions'));
                             } else {
-                                $failed = true;
+                                if(OC_ADMIN) {
+                                    osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'market'), 'admin');
+                                } else {
+                                    osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'market'));
+                                }
                             }
                         } else {
-                            $failed = true;
+                            if(OC_ADMIN) {
+                                osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'market'), 'admin');
+                            } else {
+                                osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'market'));
+                            }
                         }
                     } else {
-                        $failed = true;
-                    }
-                    if($failed) {
                         if(OC_ADMIN) {
-                            osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'market'), 'admin');
+                            osc_add_flash_error_message(__('The file is too big', 'market'), 'admin');
                         } else {
-                            osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'market'));
+                            osc_add_flash_error_message(__('The file is too big', 'market'));
                         }
                     }
+
+                }
+                
+                
+                // UPLOAD NEW BANNER
+                $banner = Params::getFiles('market_banner');
+                if (isset($banner['error']) && $banner['error'] == UPLOAD_ERR_OK) {
+                    require LIB_PATH . 'osclass/mimes.php';
+                    $aMimesAllowed = array();
+                    $aExt = explode(',', osc_allowed_extension());
+                    foreach($aExt as $ext){
+                        $mime = $mimes[$ext];
+                        if( is_array($mime) ){
+                            foreach($mime as $aux){
+                                if( !in_array($aux, $aMimesAllowed) ) {
+                                    array_push($aMimesAllowed, $aux );
+                                }
+                            }
+                        } else {
+                            if( !in_array($mime, $aMimesAllowed) ) {
+                                array_push($aMimesAllowed, $mime );
+                            }
+                        }
+                    }
+                    $failed = false;
+                    $maxSize = osc_max_size_kb() * 1024;
+                    $bool_img = false;
+                    $size = $banner['size'];
+                    if($size <= $maxSize){
+                        $fileMime = $banner['type'] ;
+                        if(in_array($fileMime,$aMimesAllowed)) {
+                            if (move_uploaded_file($banner['tmp_name'], osc_get_preference('upload_path', 'market').$item_id."_.jpg")) {
+                                @unlink(osc_get_preference('upload_path', 'market').$item_id.".jpg");
+                                ImageResizer::fromFile(osc_get_preference('upload_path', 'market').$item_id."_.jpg")->resizeTo(624,224)->saveToFile(osc_get_preference('upload_path', 'market').$item_id.".jpg") ;
+                                @unlink(osc_get_preference('upload_path', 'market').$item_id."_.jpg");
+                                $market->update(array('s_banner' => $item_id.".jpg"), array('pk_i_id' => $market_id));
+                            } else {
+                                if(OC_ADMIN) {
+                                    osc_add_flash_error_message(__('Banner was not uploaded because it has incorrect extension', 'market'), 'admin');
+                                } else {
+                                    osc_add_flash_error_message(__('Banner was not uploaded because it has incorrect extension', 'market'));
+                                }
+                            }
+                        } else {
+                            if(OC_ADMIN) {
+                                osc_add_flash_error_message(__('Banner was not uploaded because it has incorrect extension', 'market'), 'admin');
+                            } else {
+                                osc_add_flash_error_message(__('Banner was not uploaded because it has incorrect extension', 'market'));
+                            }
+                        }
+                    } else {
+                        if(OC_ADMIN) {
+                            osc_add_flash_error_message(__('The banner is too big', 'market'), 'admin');
+                        } else {
+                            osc_add_flash_error_message(__('The banner is too big', 'market'));
+                        }
+                    }
+
                 }
             }
         }
