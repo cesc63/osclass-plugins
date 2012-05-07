@@ -3,14 +3,14 @@
 Plugin Name: Forms
 Plugin URI: http://www.osclass.org/
 Description: -
-Version: 0.9
+Version: 1.0
 Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: forms
 Plugin update URI: 
 */
 
-    define('FORM_VERSION', '0.9') ;
+    define('FORM_VERSION', '1.0') ;
 
     function form_install() {
         $dbCommand = get_dbCommand() ;
@@ -98,6 +98,19 @@ Plugin update URI:
             $data = $conn->getOsclassDb();
             return new DBCommandClass($data) ;
         }
+    }
+
+    if( !function_exists('contact_form_ip') ) {
+        function contact_form_ip() {
+            $location = Rewrite::newInstance()->get_location();
+            $section  = Rewrite::newInstance()->get_section();
+
+            if( $location == 'contact' && $section == 'contact_post' ) {
+                $message = 'IP: ' . $_SERVER['REMOTE_ADDR'] . '<br/><br/>' . Params::getParam('message') ;
+                Params::setParam('message', $message) ;
+            }
+        }
+        osc_add_hook('init', 'contact_form_ip') ;
     }
 
     /* file end: forms/index.php */
