@@ -14,6 +14,7 @@ Plugin update URI:
     define( 'MARKET_PLUGIN_PATH', osc_plugins_path() . 'market/' ) ;
 
     require_once( MARKET_PLUGIN_PATH . '/ModelMarket.php' ) ;
+    require_once( MARKET_PLUGIN_PATH . '/helpers.php' ) ;
 
     function market_install() {
         ModelMarket::newInstance()->import('market/struct.sql') ;
@@ -35,7 +36,7 @@ Plugin update URI:
         }
     }
     
-    function market_admin_menu() {
+    function market_admin_menu_plugin() {
         echo '<h3><a href="#">Market</a></h3>
         <ul> 
             <li><a href="' . osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'conf.php') . '">&raquo; ' . __('Settings', 'market') . '</a></li>
@@ -77,6 +78,14 @@ Plugin update URI:
         if(osc_is_this_category('market', osc_item_category_id())) {
             $market_files = ModelMarket::newInstance()->getFileFromItem(osc_item_id());
             require_once( MARKET_PLUGIN_PATH . 'item_detail.php' );
+        }
+    }
+    
+    function market_load_data() {
+        if(osc_is_ad_page()) {
+            $market = ModelMarket::newInstance()->findByItemId(osc_item_id());
+            $market['files'][0] = ModelMarket::newInstance()->getFileFromItem(osc_item_id());
+            View::newInstance()->_exportVariableToView("market_ad", $market);
         }
     }
 
@@ -275,7 +284,8 @@ Plugin update URI:
     osc_add_hook(osc_plugin_path(__FILE__)."_uninstall", 'market_uninstall');
     osc_add_hook(osc_plugin_path(__FILE__)."_configure", 'market_configure_link');
 
-    osc_add_hook('item_detail', 'market_item_detail');
+    //osc_add_hook('item_detail', 'market_item_detail');
+    osc_add_hook('before_html', 'market_load_data');
 
     osc_add_hook('item_form', 'market_form');
     osc_add_hook('item_edit', 'market_item_edit');
@@ -285,6 +295,6 @@ Plugin update URI:
 
     osc_add_hook('delete_item', 'market_delete_item');
 
-    osc_add_hook('admin_menu', 'market_admin_menu');
+    osc_add_hook('admin_menu', 'market_admin_menu_plugin');
 
 ?>
