@@ -140,18 +140,22 @@ Plugin update URI:
                     if(OC_ADMIN) {
                         foreach($versions as $k => $v) {
                             $c_v = array();
-                            foreach($comp_versions[$k] as $kk => $vv) {
-                                $c_v[] = $kk;
+                            if($comp_versions!='') {
+                                foreach($comp_versions[$k] as $kk => $vv) {
+                                    $c_v[] = $kk;
+                                }
                             }
-                            $market->updateFile($market_id, $k, array('s_version' => implode(",", $c_v), 'b_enabled' => (isset($enables[$k]) && $enables[$k]==1)?1:0));
+                            $market->updateFile($market_id, $k, array('s_version' => $versions[$k], 's_compatible' => implode(",", $c_v), 'b_enabled' => (isset($enables[$k]) && $enables[$k]==1)?1:0));
                         }
                     } else {
                         foreach($versions as $k => $v) {
                             $c_v = array();
-                            foreach($comp_versions[$k] as $kk => $vv) {
-                                $c_v[] = $kk;
+                            if($comp_versions!='') {
+                                foreach($comp_versions[$k] as $kk => $vv) {
+                                    $c_v[] = $kk;
+                                }
                             }
-                            $market->updateFile($market_id, $k, array('s_version' => implode(",", $c_v)));
+                            $market->updateFile($market_id, $k, array('s_compatible' => implode(",", $c_v), 's_version' => $versions[$k]));
                         }
                     }
                 }

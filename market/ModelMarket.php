@@ -165,7 +165,7 @@
             $this->dao->select();
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
-            $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = f.fk_i_item_id", "LEFT");
+            $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = m.fk_i_item_id", "LEFT");
             $this->dao->where('m.s_slug', $slug);
             $this->dao->where('f.b_enabled', 1);
             if($version!='') {
@@ -232,9 +232,11 @@
          */
         public function insertFile($market_id, $path, $download_url, $version, $comp_versions) {
             $versions = array();
-            foreach($comp_versions as $k => $v) {
-                $versions[] = $k;
-            };
+            if($comp_versions!='') {
+                foreach($comp_versions as $k => $v) {
+                    $versions[] = $k;
+                };
+            }
             return $this->dao->insert( $this->getTable_Files(), array(
                 'fk_i_market_id' => $market_id,
                 's_file' => $path,

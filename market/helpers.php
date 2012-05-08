@@ -26,14 +26,7 @@
         return @$market['s_banner'];
     }
 
-    function market_download() {
-        $market = market_ad();
-        return @$market['s_download'];
-    }
 
-
-    
-    
     function market_file() {
         $market = market_ad();
         if(isset($market['files'][0])) {
@@ -41,6 +34,11 @@
         } else {
             return array();
         }
+    }
+    
+    function market_file_download() {
+        $file = market_file();
+        return @$file['s_download'];
     }
     
     function market_file_version() {
