@@ -156,9 +156,12 @@ Plugin update URI:
                     }
                 }
                 
+                
                 // UPLOAD NEW FILE
                 $file = Params::getFiles('market_file_new');
-                if (isset($file['error']) && $file['error'] == UPLOAD_ERR_OK) {
+                if(Params::getParam('market_download_url')!='') {
+                    $market->insertFile($market_id, '', Params::getParam('market_download_url'), Params::getParam('market_version_new'), Params::getParam('market_new_comp_versions'));
+                } else if (isset($file['error']) && $file['error'] == UPLOAD_ERR_OK) {
                     require LIB_PATH . 'osclass/mimes.php';
                     $aMimesAllowed = array();
                     $aExt = explode(',', osc_get_preference('allowed_ext', 'market'));
@@ -188,7 +191,7 @@ Plugin update URI:
                             $file_name = $date.'_'.$item_id.'_'.$file['name'];
                             $path = osc_get_preference('upload_path', 'market').$file_name;
                             if (move_uploaded_file($file['tmp_name'], $path)) {
-                                $failed = $market->insertFile($market_id, $path, Params::getParam('market_version_new'), Params::getParam('market_new_comp_versions'));
+                                $market->insertFile($market_id, $path, '', Params::getParam('market_version_new'), Params::getParam('market_new_comp_versions'));
                             } else {
                                 if(OC_ADMIN) {
                                     osc_add_flash_error_message(__('Some of the files were not uploaded because they have incorrect extension', 'market'), 'admin');

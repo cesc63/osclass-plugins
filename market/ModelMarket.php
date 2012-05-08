@@ -230,7 +230,7 @@
         /**
          * Insert new file
          */
-        public function insertFile($market_id, $path, $version, $comp_versions) {
+        public function insertFile($market_id, $path, $download_url, $version, $comp_versions) {
             $versions = array();
             foreach($comp_versions as $k => $v) {
                 $versions[] = $k;
@@ -238,6 +238,7 @@
             return $this->dao->insert( $this->getTable_Files(), array(
                 'fk_i_market_id' => $market_id,
                 's_file' => $path,
+                's_download' => $download_url,
                 's_version' => $version,
                 's_compatible' => implode(",", $versions),
                 'b_enabled' => 0
