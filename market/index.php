@@ -284,7 +284,7 @@ Plugin update URI:
     osc_add_hook(osc_plugin_path(__FILE__)."_uninstall", 'market_uninstall');
     osc_add_hook(osc_plugin_path(__FILE__)."_configure", 'market_configure_link');
 
-    //osc_add_hook('item_detail', 'market_item_detail');
+    osc_add_hook('item_detail', 'market_item_detail');
     osc_add_hook('before_html', 'market_load_data');
 
     osc_add_hook('item_form', 'market_form');

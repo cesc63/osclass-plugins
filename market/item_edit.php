@@ -16,6 +16,11 @@
                         <?php $tmp = explode("/", $_r['s_file']);?>
                         <p><?php echo $tmp[count($tmp)-1] ; ?> 
                             <br/>
+                            <?php if(market_download()!='') { ?>
+                                <label><?php _e('Download URL','market'); ?></label>
+                                <p><?php echo market_download(); ?></p>
+                                <br/>
+                            <?php }; ?>
                             <label><?php _e('Version','market'); ?></label>
                             <input type="text" name="market_version[<?php echo $_r['pk_i_id']; ?>]" id="market_version_<?php echo $_r['pk_i_id']; ?>" value="<?php echo $_r['s_version']; ?>" />
                             <br/>
@@ -39,6 +44,11 @@
             <div class="row">
                 <input type="file" name="market_file_new" />
                 <br/>
+                <?php if(OC_ADMIN) {?>
+                    <label><?php _e('Download URL','market'); ?></label>
+                    <input type="text" name="market_download_url" id="market_download_url" value="" />
+                    <br/>
+                <?php }; ?>
                 <label><?php _e('Version','market'); ?></label>
                 <input type="text" name="market_version_new" id="market_version_new" value="" />
                 <br/>

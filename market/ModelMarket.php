@@ -59,7 +59,7 @@
             parent::__construct();
             $this->setTableName('t_market') ;
             $this->setPrimaryKey('pk_i_id') ;
-            $this->setFields( array('pk_i_id', 'fk_i_item_id', 's_slug', 's_banner') ) ;
+            $this->setFields( array('pk_i_id', 'fk_i_item_id', 's_slug', 's_banner', 's_download') ) ;
         }
         
         /**

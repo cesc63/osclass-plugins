@@ -26,6 +26,11 @@
         return @$market['s_banner'];
     }
 
+    function market_download() {
+        $market = market_ad();
+        return @$market['s_download'];
+    }
+
 
     
     
