@@ -1,5 +1,25 @@
 <?php
     switch(Params::getParam('paction')) {
+        case 'download':
+            $code = Params::getParam('code') ;
+            $json = array('msg' => '', 'error' => 1);
+            if( $code != '' ) {
+                if( preg_match('|(.+)@([A-Za-z0-9\.-]+)$|', $code, $m) ) {
+                    $slug    = $m[1] ;
+                    $version = $m[2] ;
+                } else {
+                    $slug    = $code ;
+                    $version = '' ;
+                }
+
+                $file = ModelMarket::newInstance()->getFileBySlug($slug, $version) ;
+                if( !empty($file) ) {
+                    ModelMarket::newInstance()->insertStat($file['pk_i_id'], @$_SERVER['REMOTE_HOST'], @$_SERVER['REMOTE_ADDR']) ;
+                    $json = array('msg' => '<iframe src="'.$file['s_donwload'].'" width="0" heigtht="0" style="width: 0px; height: 0px; display: none;"></iframe>', 'error' => 0);
+                }
+            }
+            echo json_encode($json);
+            break;
         case 'delete':
             if(ModelMarket::newInstance()->deleteFile(Params::getParam('id'), Params::getParam('item'), Params::getParam('secret'))) {
                 echo json_encode(array('msg' => __('File correctly deleted', 'market'), 'error' => 0));
