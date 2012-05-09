@@ -243,7 +243,7 @@
                 's_download' => $download_url,
                 's_version' => $version,
                 's_compatible' => implode(",", $versions),
-                'b_enabled' => 0
+                'b_enabled' => 1
             ));
         }
        
