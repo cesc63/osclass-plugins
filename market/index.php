@@ -129,7 +129,9 @@ Plugin update URI:
                 // NEED TO INSERT NEW FILE?
                 $market_id = $market->marketExists($item_id);
                 if($market_id==false) {
-                    $market_id = $market->insertMarket($item_id, $slug);
+                    $market_id = $market->insertMarket($item_id, $slug, Params::getParam('market_preview'));
+                } else {
+                  $market->update(array('s_slug' => $slug, 's_preview' => Params::getParam('market_preview')), array('pk_i_id' => $market_id));  
                 }
 
                 // UPDATE VERSIONS

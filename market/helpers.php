@@ -26,6 +26,11 @@
         return @$market['s_banner'];
     }
 
+    function market_preview_url() {
+        $market = market_ad();
+        return @$market['s_preview'];
+    }
+
 
     function market_file() {
         $market = market_ad();

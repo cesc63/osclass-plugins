@@ -7,6 +7,9 @@
             <br/>
             <label><?php _e('Slug','market'); ?></label>
             <input type="text" name="market_slug" id="market_slug" value="<?php echo @$market['s_slug']; ?>" />
+            <br/>
+            <label><?php _e('Live Preview (in case of themes)','market'); ?></label>
+            <input type="text" name="market_preview" id="market_preview" value="<?php echo @$market['s_preview']; ?>" />
             <?php }; ?>
         </div>
             <?php

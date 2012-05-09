@@ -3,6 +3,7 @@ CREATE TABLE /*TABLE_PREFIX*/t_market (
     fk_i_item_id INT(10) UNSIGNED NOT NULL,
     s_slug VARCHAR(250) NULL,
     s_banner VARCHAR(250) NULL,
+    s_preview VARCHAR(250) NULL,
 
         INDEX idx_fk_i_item_id (fk_i_item_id),
         INDEX idx_s_slug (s_slug),
