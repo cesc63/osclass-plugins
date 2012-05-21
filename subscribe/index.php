@@ -121,13 +121,13 @@ Plugin update URI:
 
             if( !$subscriber ) {
                 $title   = sprintf(__('Error &raquo; %s', 'subscribe'), osc_page_title());
-                $message = __("The email you're trying to unsubscribe doesn't exist.", 'subscribe');
+                $message = sprintf(__('The email you\'re trying to unsubscribe doesn\'t exist. <a href="%s">Go home</a>', 'subscribe'), osc_base_url());
                 osc_die($title, $message);
             }
 
             if( !$subscriber['b_active'] ) {
                 $title   = sprintf(__('Error &raquo; %s', 'subscribe'), osc_page_title());
-                $message = __("You're already unsubscribed", 'subscribe');
+                $message = sprintf(__('You\'re already unsubscribed. <a href="%s">Go home</a>', 'subscribe'), osc_base_url());
                 osc_die($title, $message);
             }
 
@@ -136,7 +136,7 @@ Plugin update URI:
             $dbCommand->update(SUBSCRIBE_TABLE, $set, array('s_email' => $email));
 
             $title   = sprintf(__('Unsubscribed correctly &raquo; %s', 'subscribe'), osc_page_title());
-            $message = __("You have been successfully unsubscribed", 'subscribe');
+            $message = sprintf(__('You have been successfully unsubscribed. <a href="%s">Go home</a>', 'subscribe'), osc_base_url());
             osc_die($title, $message);
         }
         osc_add_hook('init', 'unsubscribe_post');
