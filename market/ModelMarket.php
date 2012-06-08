@@ -408,11 +408,22 @@
          * General purpouse function
          */
         public function getData($type = 'PLUGIN', $page = 0) {
+            
+            if($type=='THEME') {
+                $catId = 96;
+            } else if($type=='LANGUAGE') {
+                $catId = 98;
+            } else {
+                $catId = 97;
+            }
+            
             $this->dao->select();
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
-            $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = f.fk_i_item_id", "LEFT");
+            $this->dao->join(DB_TABLE_PREFIX."t_item i ", "i.pk_i_id = m.fk_i_item_id", "LEFT");
+            $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = m.fk_i_item_id", "LEFT");
             $this->dao->where('f.b_enabled', 1);
+            $this->dao->where('i.fk_i_Category_id', $catId);
             $this->dao->groupBy('m.s_slug');
             $this->dao->orderBy('f.pk_i_id', 'DESC');
             $this->dao->limit($page, 5);
