@@ -19,18 +19,33 @@
         if( !empty($file) ) {
             ModelMarket::newInstance()->insertStat($file['pk_i_id'], @$_SERVER['REMOTE_HOST'], @$_SERVER['REMOTE_ADDR']) ;
             
-            header( 'Content-Description: File Transfer' ) ;
-            header( 'Content-Type: application/octet-stream' ) ;
-            header( 'Content-Disposition: attachment; filename=' . basename($file['s_file']) ) ;
-            header( 'Content-Transfer-Encoding: binary' ) ;
-            header( 'Expires: 0' ) ;
-            header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' ) ;
-            header( 'Pragma: public' ) ;
-            header( 'Content-Length: ' . filesize($file['s_file']) ) ;
-            @ob_clean() ;
-            flush() ;
-            readfile($file['s_file']) ;
-            exit ;
+            if($file['s_file']!='') {
+                header( 'Content-Description: File Transfer' ) ;
+                header( 'Content-Type: application/octet-stream' ) ;
+                header( 'Content-Disposition: attachment; filename=' . basename($file['s_file']) ) ;
+                header( 'Content-Transfer-Encoding: binary' ) ;
+                header( 'Expires: 0' ) ;
+                header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' ) ;
+                header( 'Pragma: public' ) ;
+                header( 'Content-Length: ' . filesize($file['s_file']) ) ;
+                @ob_clean() ;
+                flush() ;
+                readfile($file['s_file']) ;
+                exit ;
+            } else {
+                header( 'Content-Description: File Transfer' ) ;
+                header( 'Content-Type: application/octet-stream' ) ;
+                header( 'Content-Disposition: attachment; filename=' . basename(str_replace("/download", "", $file['s_download'])) ) ;
+                header( 'Content-Transfer-Encoding: binary' ) ;
+                header( 'Expires: 0' ) ;
+                header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' ) ;
+                header( 'Pragma: public' ) ;
+                //header( 'Content-Length: ' . filesize($file['s_file']) ) ;
+                @ob_clean() ;
+                flush() ;
+                readfile($file['s_download']) ;
+                exit ;
+            }
         }
     }
 
