@@ -184,25 +184,13 @@
                 } else {
                     $file['e_type'] = 'PLUGIN';
                 }
+
+                $res = ItemResource::newInstance()->getResource($file['fk_i_item_id']);
+                $file['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
+                $file['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
+                unset($file['s_contact_email']);
+                
                 return $file;
-            } else {
-                return array();
-            }
-        } 
-        
-        /**
-         * Get file by slug
-         */
-        public function getFilesBySlug($slug) {
-            $this->dao->select();
-            $this->dao->from($this->getTable()." m");
-            $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
-            $this->dao->where('m.s_slug', $slug);
-            $this->dao->where('f.b_enabled', 1);
-            $this->dao->orderBy('f.pk_i_id', 'DESC');
-            $result = $this->dao->get() ;
-            if($result!==false) {
-                return $result->result() ;
             } else {
                 return array();
             }
@@ -443,6 +431,7 @@
                     $res = ItemResource::newInstance()->getResource($v['fk_i_item_id']);
                     $data[$k]['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
                     $data[$k]['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
+                    unset($data[$k]['s_contact_email']);
                 }
                 return $data;
             } else {

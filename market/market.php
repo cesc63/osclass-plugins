@@ -16,24 +16,12 @@
             $version = '' ;
         }
 
-        if( Params::getParam('files') == 1 ) {
-            $files = ModelMarket::newInstance()->getFilesBySlug($slug);
-            if( !empty($files) ) {
-                foreach( $files as $k => $v ) {
-                    unset($files[$k]['s_file']) ;
-                    $files[$k]['s_source_file'] = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $code ;
-                    $files[$k]['error'] = 0 ;
-                }
-                echo json_encode($files) ; exit ;
-            }
-        } else {
-            $file = ModelMarket::newInstance()->getFileBySlug($slug, $version) ;
-            if( !empty($file) ) {
-                unset($file['s_file']) ;
-                $file['s_source_file'] = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $code ;
-                $file['error'] = 0;
-                echo json_encode($file) ; exit ;
-            }
+        $file = ModelMarket::newInstance()->getFileBySlug($slug, $version) ;
+        if( !empty($file) ) {
+            unset($file['s_file']) ;
+            $file['s_source_file'] = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $code ;
+            $file['error'] = 0;
+            echo json_encode($file) ; exit ;
         }
     } else {
         
