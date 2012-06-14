@@ -429,8 +429,13 @@
                 $data = $result->result();
                 foreach($data as $k => $v) {
                     $res = ItemResource::newInstance()->getResource($v['fk_i_item_id']);
-                    $data[$k]['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
-                    $data[$k]['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
+                    if($res) {
+                        $data[$k]['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
+                        $data[$k]['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
+                    } else {
+                        $data[$k]['s_image'] = '';
+                        $data[$k]['s_thumbnail'] = '';
+                    }
                     unset($data[$k]['s_contact_email']);
                 }
                 return $data;
