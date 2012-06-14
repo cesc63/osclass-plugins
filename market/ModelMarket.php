@@ -186,8 +186,13 @@
                 }
 
                 $res = ItemResource::newInstance()->getResource($file['fk_i_item_id']);
-                $file['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
-                $file['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
+                if($res) {
+                    $file['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
+                    $file['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
+                } else {
+                    $file['s_image'] = '';
+                    $file['s_thumbnail'] = '';
+                }
                 unset($file['s_contact_email']);
                 
                 return $file;
