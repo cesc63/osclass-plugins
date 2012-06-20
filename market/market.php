@@ -26,7 +26,7 @@
     } else {
         
         $section = Params::getParam('section');
-        $page = Params::getParam('page')==''?0:Params::getParam('page');
+        $page = Params::getParam('iPage')==''?0:Params::getParam('iPage');
         
         $mUni = ModelMarket::newInstance();
         
