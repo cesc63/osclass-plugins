@@ -28,6 +28,7 @@
         $section = Params::getParam('section');
         $page = Params::getParam('iPage')==''?0:Params::getParam('iPage');
         
+        
         $mUni = ModelMarket::newInstance();
         
         switch($section) {
@@ -37,25 +38,58 @@
                 break;
             
             case 'plugins':
+                $total   = $mUni->countData('PLUGIN');
                 $plugins = $mUni->getPlugins($page);
-                echo json_encode(array('plugins' => $plugins)); exit;
+                $array = array(
+                    'plugins'   => $plugins,
+                    'total'     => $total,
+                    'page'      => $page,
+                    'sizePage'  => $mUni->pageSize()
+                );
+                echo json_encode($array); exit;
                 break;
             
             case 'themes':
-                $themes = $mUni->getThemes($page);
-                echo json_encode(array('themes' => $themes)); exit;
+                $total   = $mUni->countData('THEME');
+                $themes  = $mUni->getThemes($page);
+                $array = array(
+                    'themes'    => $themes,
+                    'total'     => $total,
+                    'page'      => $page,
+                    'sizePage'  => $mUni->pageSize()
+                    );
+                echo json_encode($array); exit;
                 break;
             
             case 'languages':
+                $total     = $mUni->countData('LANGUAGE');
                 $languages = $mUni->getLanguages($page);
-                echo json_encode(array('languages' => $languages)); exit;
+                $array = array(
+                    'languages' => $languages,
+                    'total'     => $total,
+                    'page'      => $page,
+                    'sizePage'  => $mUni->pageSize()
+                    );
+                echo json_encode($array); exit;
                 break;
             
             default:
-                $plugins = $mUni->getPlugins();
-                $themes = $mUni->getThemes();
-                $languages = $mUni->getLanguages();
-                echo json_encode(array('plugins' => $plugins, 'themes' => $themes, 'languages' => $languages)); exit;
+                $plugins    = $mUni->getPlugins();
+                $themes     = $mUni->getThemes();
+                $languages  = $mUni->getLanguages();
+                $totalP     = $mUni->countData('PLUGIN');
+                $totalT     = $mUni->countData('THEME');
+                $totalL     = $mUni->countData('LANGUAGE');
+                
+                $array = array(
+                    'plugins'       => $plugins,
+                    'pluginsTotal'  => $totalP, 
+                    'themes'        => $themes, 
+                    'themesTotal'   => $totalT, 
+                    'languages'     => $languages,
+                    'languagesTotal' => $totalL 
+                    );
+                echo json_encode($array); exit;
                 break;
         }
         

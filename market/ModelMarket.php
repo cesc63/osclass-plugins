@@ -36,6 +36,7 @@
          * @var Currency
          */
         private static $instance ;
+        public $pageSize = 5;
 
         /**
          * It creates a new ModelMarket object class ir if it has been created
@@ -84,6 +85,13 @@
          */
         public function getTable_Stats() {
             return DB_TABLE_PREFIX.'t_market_stats';
+        }
+        
+        /**
+         * Return pageSize
+         */
+        public function pageSize() {
+            return $this->pageSize;
         }
         
         /**
@@ -375,8 +383,7 @@
             } else {
                 return 0;
             }
-        }
-       
+        }       
         
         /*
          * Get plugins
@@ -419,6 +426,8 @@
                 $catId = 97;
             }
             
+            $start = $page*$this->pageSize;
+            
             $this->dao->select();
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
@@ -428,7 +437,7 @@
             $this->dao->where('i.fk_i_category_id', $catId);
             $this->dao->groupBy('m.s_slug');
             $this->dao->orderBy('f.pk_i_id', 'DESC');
-            $this->dao->limit($page, 5);
+            $this->dao->limit($start, $this->pageSize);
             $result = $this->dao->get() ;
             if($result!==false) {
                 $data = $result->result();
@@ -446,6 +455,36 @@
                 return $data;
             } else {
                 return array();
+            }
+        }
+        
+        /*
+         * General purpouse function
+         */
+        public function countData($type = 'PLUGIN') {
+
+            if($type=='THEME') {
+                $catId = 96;
+            } else if($type=='LANGUAGE') {
+                $catId = 98;
+            } else {
+                $catId = 97;
+            }
+
+            $this->dao->select('COUNT(*) as total');
+            $this->dao->from($this->getTable()." m");
+            $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
+            $this->dao->join(DB_TABLE_PREFIX."t_item i ", "i.pk_i_id = m.fk_i_item_id", "LEFT");
+            $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = m.fk_i_item_id", "LEFT");
+            $this->dao->where('f.b_enabled', 1);
+            $this->dao->where('i.fk_i_category_id', $catId);
+            $result = $this->dao->get() ;
+
+            if($result!==false) {
+                $row = $result->result();
+                return $row[0]['total'];
+            } else {
+                return 0;
             }
         }
     }
