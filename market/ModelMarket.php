@@ -471,18 +471,18 @@
                 $catId = 97;
             }
 
-            $this->dao->select('COUNT(*) as total');
+            $this->dao->select('m.pk_i_id');
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
             $this->dao->join(DB_TABLE_PREFIX."t_item i ", "i.pk_i_id = m.fk_i_item_id", "LEFT");
-            $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = m.fk_i_item_id", "LEFT");
             $this->dao->where('f.b_enabled', 1);
             $this->dao->where('i.fk_i_category_id', $catId);
+            $this->dao->groupBy("m.pk_i_id");
+            
             $result = $this->dao->get() ;
 
             if($result!==false) {
-                $row = $result->result();
-                return $row[0]['total'];
+                return $result->numRows();
             } else {
                 return 0;
             }
