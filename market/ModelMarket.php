@@ -138,7 +138,7 @@
             $this->dao->from($this->getTable()." m , ".$this->getTable_Files()." f ");
             $this->dao->where('m.fk_i_item_id', $item_id);
             $this->dao->where('f.fk_i_market_id = m.pk_i_id');
-            $this->dao->orderBy('m.pk_i_id', 'DESC');
+            $this->dao->orderBy('f.pk_i_id', 'DESC');
             $this->dao->limit(1);
             $result = $this->dao->get() ;
             if($result!==false) {
@@ -156,7 +156,7 @@
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
             $this->dao->where('m.fk_i_item_id', $item_id);
-            $this->dao->orderBy('m.pk_i_id', 'DESC');
+            $this->dao->orderBy('f.pk_i_id', 'DESC');
             $result = $this->dao->get() ;
             if($result!==false) {
                 return $result->result() ;
