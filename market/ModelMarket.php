@@ -36,7 +36,7 @@
          * @var Currency
          */
         private static $instance ;
-        public $pageSize = 5;
+        public $pageSize = 10;
 
         /**
          * It creates a new ModelMarket object class ir if it has been created
