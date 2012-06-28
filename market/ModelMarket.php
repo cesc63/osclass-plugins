@@ -170,7 +170,22 @@
          */
         public function getFileBySlug($slug, $version = '') {
             
-            $this->dao->select();
+            $this->dao->select(
+                    " m.s_slug as s_update_url"
+                    .", m.s_banner as s_banner"
+                    .", m.s_preview as s_preview"
+                    .", f.s_file as s_source_file"
+                    .", f.s_compatible as s_compatible"
+                    .", f.s_version as s_version"
+                    .", f.s_download as s_download"
+                    .", i.fk_i_category_id as fk_i_cateogry_id"
+                    .", i.dt_pub_date as dt_pub_date"
+                    .", i.dt_mod_date as dt_mod_date"
+                    .", i.s_contact_name as s_contact_name"
+                    .", m.fk_i_item_id as fk_i_item_id"
+                    .", d.s_title as s_title"
+                    .", d.s_description as s_description"
+                    );
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
             $this->dao->join(DB_TABLE_PREFIX."t_item i ", "i.pk_i_id = m.fk_i_item_id", "LEFT");
@@ -201,7 +216,8 @@
                     $file['s_image'] = '';
                     $file['s_thumbnail'] = '';
                 }
-                unset($file['s_contact_email']);
+                unset($file['fk_i_category_id']);
+                unset($file['fk_i_item_id']);
                 
                 return $file;
             } else {
@@ -427,6 +443,7 @@
             } else if($type=='PLUGIN') {
                 $catId = 97;
             } else {
+                $type = '';
                 $catId = null;
             }
             
@@ -435,10 +452,11 @@
                     " m.s_slug as s_update_url"
                     .", m.s_banner as s_banner"
                     .", m.s_preview as s_preview"
-                    .", f.s_file as s_file"
+                    .", f.s_file as s_source_file"
                     .", f.s_compatible as s_compatible"
                     .", f.s_version as s_version"
                     .", f.s_download as s_download"
+                    .", i.fk_i_category_id as fk_i_cateogry_id"
                     .", i.dt_pub_date as dt_pub_date"
                     .", i.dt_mod_date as dt_mod_date"
                     .", i.s_contact_name as s_contact_name"
@@ -462,6 +480,7 @@
             if($result!==false) {
                 $data = $result->result();
                 foreach($data as $k => $v) {
+                    $data[$k]['e_type'] = $type;
                     $res = ItemResource::newInstance()->getResource($v['fk_i_item_id']);
                     if($res) {
                         $data[$k]['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
@@ -471,6 +490,7 @@
                         $data[$k]['s_thumbnail'] = '';
                     }
                     unset($data[$k]['fk_i_item_id']);
+                    unset($data[$k]['fk_i_category_id']);
                 }
                 return $data;
             } else {
