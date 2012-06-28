@@ -178,7 +178,7 @@
                     .", f.s_compatible as s_compatible"
                     .", f.s_version as s_version"
                     .", f.s_download as s_download"
-                    .", i.fk_i_category_id as fk_i_cateogry_id"
+                    .", i.fk_i_category_id as fk_i_category_id"
                     .", i.dt_pub_date as dt_pub_date"
                     .", i.dt_mod_date as dt_mod_date"
                     .", i.s_contact_name as s_contact_name"
