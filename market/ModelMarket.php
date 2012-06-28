@@ -325,7 +325,9 @@
          * Get latest files added
          */
         public function getLatest($page = 0) {
-            $this->dao->select();
+            $this->page = 20;
+            return $this->getData('LATEST', $page);
+            /*$this->dao->select();
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
             $this->dao->orderBy('m.pk_i_id', 'DESC');
@@ -335,7 +337,7 @@
                 return $result->result() ;
             } else {
                 return array();
-            }
+            }*/
         }
         
         /*
@@ -416,28 +418,46 @@
         /*
          * General purpouse function
          */
-        public function getData($type = 'PLUGIN', $page = 0) {
+        public function getData($type = 'LATEST', $page = 0) {
             
             if($type=='THEME') {
                 $catId = 96;
             } else if($type=='LANGUAGE') {
                 $catId = 98;
-            } else {
+            } else if($type=='PLUGIN') {
                 $catId = 97;
+            } else {
+                $catId = null;
             }
             
             $start = $page*$this->pageSize;
-            
-            $this->dao->select();
+            $this->dao->select(
+                    " m.s_slug as s_update_url"
+                    .", m.s_banner as s_banner"
+                    .", m.s_preview as s_preview"
+                    .", f.s_file as s_file"
+                    .", f.s_compatible as s_compatible"
+                    .", f.s_version as s_version"
+                    .", f.s_download as s_download"
+                    .", i.dt_pub_date as dt_pub_date"
+                    .", i.dt_mod_date as dt_mod_date"
+                    .", i.s_contact_name as s_contact_name"
+                    .", m.fk_i_item_id as fk_i_item_id"
+                    .", d.s_title as s_title"
+                    .", d.s_description as s_description"
+                    );
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
             $this->dao->join(DB_TABLE_PREFIX."t_item i ", "i.pk_i_id = m.fk_i_item_id", "LEFT");
             $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = m.fk_i_item_id", "LEFT");
             $this->dao->where('f.b_enabled', 1);
-            $this->dao->where('i.fk_i_category_id', $catId);
+            if($catId!=null) {
+                $this->dao->where('i.fk_i_category_id', $catId);
+            }
             $this->dao->groupBy('m.s_slug');
             $this->dao->orderBy('f.pk_i_id', 'DESC');
             $this->dao->limit($start, $this->pageSize);
+            
             $result = $this->dao->get() ;
             if($result!==false) {
                 $data = $result->result();
@@ -450,7 +470,7 @@
                         $data[$k]['s_image'] = '';
                         $data[$k]['s_thumbnail'] = '';
                     }
-                    unset($data[$k]['s_contact_email']);
+                    unset($data[$k]['fk_i_item_id']);
                 }
                 return $data;
             } else {
