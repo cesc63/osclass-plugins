@@ -479,7 +479,8 @@
             
             $start = $page*$this->pageSize;
             $this->dao->select(
-                    " m.s_slug as s_update_url"
+                    "f.pk_i_id as pk_i_id"
+                    .", m.s_slug as s_update_url"
                     .", m.s_banner as s_banner"
                     .", m.s_preview as s_preview"
                     .", f.s_file as s_source_file"
@@ -502,13 +503,24 @@
             if($catId!=null) {
                 $this->dao->where('i.fk_i_category_id', $catId);
             }
-            $this->dao->groupBy('m.s_slug');
+            //$this->dao->groupBy('m.s_slug');
             $this->dao->orderBy('f.pk_i_id', 'DESC');
+            $subquery = $this->dao->_getSelect() ;
+            $this->dao->_resetSelect() ;
+            
+            
+            $this->dao->select();
+            $this->dao->from($this->getTable_Files());
+            $this->dao->join(sprintf( '(%s) as aux', $subquery ), "aux.pk_i_id = ".DB_TABLE_PREFIX."t_market_files.pk_i_id ", "RIGHT");
+            $this->dao->orderBy(DB_TABLE_PREFIX.'t_market_files.pk_i_id', 'DESC') ;
+            $this->dao->groupBy($this->getTable_Files().".fk_i_market_id");
             $this->dao->limit($start, $this->pageSize);
             
             $result = $this->dao->get() ;
+            
             if($result!==false) {
                 $data = $result->result();
+
                 foreach($data as $k => $v) {
                     $data[$k]['e_type'] = $type;
                     $res = ItemResource::newInstance()->getResource($v['fk_i_item_id']);
@@ -521,6 +533,7 @@
                     }
                     unset($data[$k]['fk_i_item_id']);
                     unset($data[$k]['fk_i_category_id']);
+                    unset($data[$k]['pk_i_id']);
                 }
                 return $data;
             } else {
