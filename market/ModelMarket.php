@@ -226,6 +226,34 @@
         } 
         
         /**
+         * Get file by slug
+         */
+        public function getFileForDownloadBySlug($slug, $version = '') {
+            
+            $this->dao->select(
+                    " f.fk_i_market_id as fk_i_market_id"
+                    .", f.pk_i_id as pk_i_id"
+                    .", f.s_file as s_source_file"
+                    .", f.s_download as s_download"
+                    );
+            $this->dao->from($this->getTable()." m");
+            $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
+            $this->dao->where('m.s_slug', $slug);
+            $this->dao->where('f.b_enabled', 1);
+            if($version!='') {
+                $this->dao->where('f.s_version', $version);
+            }
+            $this->dao->orderBy('f.pk_i_id', 'DESC');
+            $this->dao->limit(1);
+            $result = $this->dao->get() ;
+            if($result!==false) {
+                return $result->row();
+            } else {
+                return array();
+            }
+        } 
+        
+        /**
          * Check if the file already exists in the market
          */
         public function marketExists($item_id) {
@@ -328,12 +356,14 @@
         /*
          * Insert new stat about a download
          */
-        public function insertStat($market_id, $remote_host, $remote_addr) {
-            return $this->dao->insert($this->getTable_Stats(), array(
+        public function insertStat($market_id, $file_id, $remote_host, $remote_addr, $osclass_version) {
+            $this->dao->insert($this->getTable_Stats(), array(
                 'fk_i_market_id' => $market_id,
+                'fk_i_file_id' => $file_id,
                 's_hostname' => $remote_host,
                 's_ip' => $remote_addr,
-                'dt_date' => date('Y-m-d H:i:s')
+                'dt_date' => date('Y-m-d H:i:s'),
+                's_osclass_version' => $osclass_version
             ));
         }
         

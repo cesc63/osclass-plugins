@@ -32,6 +32,7 @@ CREATE TABLE /*TABLE_PREFIX*/t_market_stats (
     s_hostname VARCHAR(250) NOT NULL,
     s_ip VARCHAR(250) NOT NULL,
     dt_date DATETIME NOT NULL,
+    s_osclass_version VARCHAR(6) NULL,
 
         INDEX idx_fk_i_market_id (fk_i_market_id),
         INDEX idx_fk_i_file_id (fk_i_file_id),
