@@ -12,9 +12,9 @@
                     $version = '' ;
                 }
 
-                $file = ModelMarket::newInstance()->getFileBySlug($slug, $version) ;
+                $file = ModelMarket::newInstance()->getFileForDownloadBySlug($slug, $version) ;
                 if( !empty($file) ) {
-                    ModelMarket::newInstance()->insertStat($file['pk_i_id'], @$_SERVER['REMOTE_HOST'], @$_SERVER['REMOTE_ADDR']) ;
+                    ModelMarket::newInstance()->insertStat($file['fk_i_market_id'], $file['pk_i_id'], isset($_SERVER['REMOTE_HOST'])?$_SERVER['REMOTE_HOST']:'', isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'', '') ;
                     $json = array('msg' => '<iframe src="'.$file['s_download'].'" width="0" heigtht="0" style="width: 0px; height: 0px; display: none;"></iframe>', 'error' => 0);
                 }
             }
