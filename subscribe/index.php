@@ -3,14 +3,14 @@
 Plugin Name: Subscribe
 Plugin URI: http://www.osclass.org/
 Description: -
-Version: 1.0
+Version: 1.1
 Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: subscribe
 Plugin update URI: 
 */
 
-    define('SUBSCRIBE_VERSION', '1.0');
+    define('SUBSCRIBE_VERSION', '1.1');
     define('SUBSCRIBE_TABLE', DB_TABLE_PREFIX . 't_subscribers');
 
     function subscribe_install() {
@@ -86,6 +86,14 @@ Plugin update URI:
         function subscribe_post() {
             // check if the POST to the subscribe plugin has been done
             if( Params::getParam('subscribe') != '' ) {
+                $return = subscribe_email();
+
+                if( Params::getParam('return_path') != '' ) {
+                    $redirectURL = Params::getParam('return_path') . '?subscribe=' . $return;
+                    header('Location: ' . $redirectURL) ;
+                    exit;
+                }
+
                 switch( $return = subscribe_email() ) {
                     case -1:
                         osc_add_flash_error_message( __('Entered an invalid email', 'subscribe') );
@@ -159,7 +167,11 @@ Plugin update URI:
             's_email'        => $email,
             'd_subscription' => date('Y-m-d'),
             'c_ip'           => $_SERVER['REMOTE_ADDR']
-        ) ;
+        );
+        if( Params::getParam('source') == 'osclass' ) {
+            $aInsert['e_source'] = 'osclass';
+        }
+
         if( $dbCommand->insert(SUBSCRIBE_TABLE, $aInsert) ) {
             return 1;
         }
