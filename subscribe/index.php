@@ -89,7 +89,7 @@ Plugin update URI:
                 $return = subscribe_email();
 
                 if( Params::getParam('return_path') != '' ) {
-                    $redirectURL = Params::getParam('return_path') . '?subscribe=' . $return;
+                    $redirectURL = Params::getParam('return_path') . '?subscribe_osclass=' . $return;
                     header('Location: ' . $redirectURL) ;
                     exit;
                 }
