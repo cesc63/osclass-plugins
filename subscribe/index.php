@@ -3,14 +3,14 @@
 Plugin Name: Subscribe
 Plugin URI: http://www.osclass.org/
 Description: -
-Version: 1.1
+Version: 1.2
 Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: subscribe
 Plugin update URI: 
 */
 
-    define('SUBSCRIBE_VERSION', '1.1');
+    define('SUBSCRIBE_VERSION', '1.2');
     define('SUBSCRIBE_TABLE', DB_TABLE_PREFIX . 't_subscribers');
 
     function subscribe_install() {
@@ -89,7 +89,11 @@ Plugin update URI:
                 $return = subscribe_email();
 
                 if( Params::getParam('return_path') != '' ) {
-                    $redirectURL = Params::getParam('return_path') . '?subscribe_osclass=' . $return;
+                    $hash = '';
+                    if( in_array(Params::getParam('source'), array('web', 'market', 'doc', 'blog')) ) {
+                        $hash = '#subscribe-footer';
+                    }
+                    $redirectURL = Params::getParam('return_path') . '?subscribe_osclass=' . $return . $hash;
                     header('Location: ' . $redirectURL) ;
                     exit;
                 }
@@ -168,8 +172,8 @@ Plugin update URI:
             'd_subscription' => date('Y-m-d'),
             'c_ip'           => $_SERVER['REMOTE_ADDR']
         );
-        if( Params::getParam('source') == 'osclass' ) {
-            $aInsert['e_source'] = 'osclass';
+        if( in_array(Params::getParam('source'), array('web', 'osclass', 'market', 'doc', 'blog')) ) {
+            $aInsert['e_source'] = Params::getParam('source');
         }
 
         if( $dbCommand->insert(SUBSCRIBE_TABLE, $aInsert) ) {
