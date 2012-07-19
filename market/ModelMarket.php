@@ -165,6 +165,20 @@
             }
         } 
         
+        public function getItemIdBySlug($slug) {
+            $this->dao->select('fk_i_item_id');
+            $this->dao->from($this->getTable());
+            $this->dao->where('s_slug', $slug);
+            $this->dao->limit(1);
+            $result = $this->dao->get() ;
+            if($result!==false) {
+                $aux = $result->row() ;
+                return $aux['fk_i_item_id'];
+            } else {
+                return array();
+            }
+        }
+        
         /**
          * Get file by slug
          */
