@@ -100,18 +100,5 @@ Plugin update URI:
         }
     }
 
-    if( !function_exists('contact_form_ip') ) {
-        function contact_form_ip() {
-            $location = Rewrite::newInstance()->get_location();
-            $section  = Rewrite::newInstance()->get_section();
-
-            if( $location == 'contact' && $section == 'contact_post' ) {
-                $message = 'IP: ' . $_SERVER['REMOTE_ADDR'] . '<br/><br/>' . Params::getParam('message') ;
-                Params::setParam('message', $message) ;
-            }
-        }
-        osc_add_hook('init', 'contact_form_ip') ;
-    }
-
     /* file end: forms/index.php */
 ?>
