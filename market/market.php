@@ -15,8 +15,9 @@
             $slug    = $code ;
             $version = '' ;
         }
-
-        $file = ModelMarket::newInstance()->getFileBySlug($slug, $version) ;
+        
+        // only show enabled files.
+        $file = ModelMarket::newInstance()->getFileBySlug($slug, $version, true);
         if( !empty($file) ) {
             unset($file['s_file']) ;
             $file['s_source_file'] = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $code ;
