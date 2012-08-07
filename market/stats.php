@@ -153,6 +153,9 @@ function market_stats_all($type, $item_id)
             <a id="monthly" class="btn float-right <?php if($type_stat=='month') echo 'btn-green';?>" href="<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php');?>?type_stat=month&type=<?php echo $type;?><?php if($item_id != '') { echo '&itemId='.$item_id;}?>"><?php _e('Last 10 months', 'market') ; ?></a>
             <a id="weekly"  class="btn float-right <?php if($type_stat=='week') echo 'btn-green';?>" href="<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php');?>?type_stat=week&type=<?php echo $type;?><?php if($item_id != '') { echo '&itemId='.$item_id;}?>"><?php _e('Last 10 weeks', 'market') ; ?></a>
             <a id="daily"   class="btn float-right <?php if($type_stat==''||$type_stat=='day') echo 'btn-green';?>" href="<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php');?>?type_stat=day&type=<?php echo $type;?><?php if($item_id != '') { echo '&itemId='.$item_id;}?>"><?php _e('Last 10 days', 'market') ; ?></a>
+            <?php if($item_id != '') {?>
+            <a id="stats"   class="btn float-right btn-red" href="<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php')?>"><?php _e('View all stats', 'market') ; ?></a>
+            <?php } ?>
         </div>
     </div>
     <div class="grid-row grid-50 clear">
