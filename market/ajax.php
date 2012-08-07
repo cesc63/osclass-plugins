@@ -20,11 +20,61 @@
             }
             echo json_encode($json);
             break;
+        case 'enable':
+            error_log('enabled ajax');
+            $fileId     = Params::getParam('fileId') ;
+            $user_id    = osc_logged_user_id();
+            $success    = false;
+            // if market file belongs to logged user or admin is logged ... will be enabled
+            if( isset($fileId) && is_numeric($fileId) ) {
+                $file   = ModelMarket::newInstance()->marketFileByPrimaryKey($fileId);
+                $market = ModelMarket::newInstance()->findByPrimaryKey( $file['fk_i_market_id'] );
+                $item   = Item::newInstance()->findByPrimaryKey( $market['fk_i_item_id'] );
+                if( $user_id == $item['fk_i_user_id'] || osc_logged_admin_id() > 0 ) {
+                    $success = ModelMarket::newInstance()->enable( $fileId );
+                    error_log($success);
+                    if($success) {   
+                        echo json_encode(array('msg' => __('File correctly enabled', 'market'), 'error' => 0));
+                    } else {
+                        echo json_encode(array('msg' => __('File could not be enabled', 'market'), 'error' => 1));
+                    }
+                }
+            }
+            break;
+        case 'disable':
+            error_log('disabled ajax');
+            $fileId     = Params::getParam('fileId') ;
+            $user_id    = osc_logged_user_id();
+            $success    = false;
+            // if market file belongs to logged user or admin is logged ... will be disabled
+            if( isset($fileId) && is_numeric($fileId) ) {
+                $file   = ModelMarket::newInstance()->marketFileByPrimaryKey($fileId);
+                $market = ModelMarket::newInstance()->findByPrimaryKey( $file['fk_i_market_id'] );
+                $item   = Item::newInstance()->findByPrimaryKey( $market['fk_i_item_id'] );
+                if( $user_id == $item['fk_i_user_id'] || osc_logged_admin_id() > 0 ) {
+                    $success = ModelMarket::newInstance()->disable( $fileId );
+                    error_log($success);
+                    if($success) {   
+                        echo json_encode(array('msg' => __('File correctly disabled', 'market'), 'error' => 0));
+                    } else {
+                        error_log('foo');
+                        echo json_encode(array('msg' => __('File could not be disabled', 'market'), 'error' => 1));
+                    }
+                }
+            }
+            break;
         case 'delete':
             if(ModelMarket::newInstance()->deleteFile(Params::getParam('id'), Params::getParam('item'), Params::getParam('secret'))) {
                 echo json_encode(array('msg' => __('File correctly deleted', 'market'), 'error' => 0));
             } else {
                 echo json_encode(array('msg' => __('File could not be deleted', 'market'), 'error' => 1));
+            }
+            break;
+        case 'delete_banner':
+            if(ModelMarket::newInstance()->removeBannerFile( Params::getParam('item'), Params::getParam('secret')) ) {
+                echo json_encode(array('msg' => __('Banner correctly deleted', 'market'), 'error' => 0));
+            } else {
+                echo json_encode(array('msg' => __('Banner could not be deleted', 'market'), 'error' => 1));
             }
             break;
         case 'files':
