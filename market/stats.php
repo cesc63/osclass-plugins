@@ -24,7 +24,9 @@ $type         = Params::getParam('type_stat');
 ?>
 <?php
 $item_id    = Params::getParam('itemId');
-
+if($item_id != '') {
+    $item_aux   = Item::newInstance()->findByPrimaryKey($item_id);
+}
 $type_stat  = Params::getParam('type_stat');
 if($type_stat == '') {
     $type_stat = 'day';
@@ -67,10 +69,6 @@ function market_stats_all($type, $item_id)
     }
     return $items;
 }
-
-
-
-
 ?>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
@@ -91,9 +89,11 @@ function market_stats_all($type, $item_id)
             data.addColumn('number', '<?php echo osc_esc_js(__('Items')); ?>');
 
             <?php /*ITEMS */
+            $acomulate = 0 ;
             $k = 0 ;
             echo "data.addRows(" . count($items) . ");" ;
             foreach($items as $date => $num) {
+                $acomulate += $num;
                 echo "data.setValue(" . $k . ', 0, "' . $date . '");';
                 echo "data.setValue(" . $k . ", 1, " . $num . ");";
                 $k++ ;
@@ -145,7 +145,7 @@ function market_stats_all($type, $item_id)
 <div class="grid-system" id="stats-page">
     <div class="grid-row grid-50 no-bottom-margin">
         <div class="row-wrapper">
-            <h2 class="render-title"><?php _e('Market Statistics', 'market'); ?></h2>
+            <h2 class="render-title"><?php _e('Market Statistics', 'market'); ?> <?php if($item_id != '') { echo ' - '.@$item_aux['locale'][osc_admin_language()]['s_title']; } ?></h2>
         </div>
     </div>
     <div class="grid-row grid-50 no-bottom-margin">
@@ -172,7 +172,7 @@ function market_stats_all($type, $item_id)
         <div class="row-wrapper">
             <div class="widget-box">
                 <div class="widget-box-title">
-                    <h3><?php _e('New listing'); ?></h3>
+                    <h3><?php _e('New listing'); ?> - <?php _e('Total', 'market'); ?> <?php echo $acomulate; ?></h3>
                 </div>
                 <div class="widget-box-content">
                     <b class="stats-title"><?php _e('Number of new listings'); ?></b>
