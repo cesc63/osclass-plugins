@@ -1,104 +1,100 @@
 <?php $market_versions = explode(",", osc_get_preference('compatible_versions', 'market')); ?>
-<h2><?php _e("Market", 'market') ; ?></h2>
-<div class="box">
-    <div class="box market_files">
-        <div class="row">
-            <?php if(osc_is_admin_user_logged_in()) { ?> 
-            <br/>
-            <label><?php _e('Slug','market'); ?></label>
-            <input type="text" name="market_slug" id="market_slug" value="<?php echo @$market['s_slug']; ?>" />
-            <br/>
-            <label><?php _e('Live Preview (in case of themes)','market'); ?></label>
-            <input type="text" name="market_preview" id="market_preview" value="<?php echo @$market['s_preview']; ?>" />
-            <?php }; ?>
-        </div>
-            <?php
-            if($market_files != null && is_array($market_files) && count($market_files) > 0) {
-                foreach($market_files as $_r) { ?>
-                    <div id="<?php echo $_r['pk_i_id']."_".$_r['fk_i_item_id'];?>">
-                        <?php $tmp = explode("/", $_r['s_file']);?>
-                        <p><?php echo $tmp[count($tmp)-1] ; ?> 
-                            <br/>
-                            <?php if(market_file_download()!='') { ?>
-                                <label><?php _e('Download URL','market'); ?></label>
-                                <p><?php echo market_file_download(); ?></p>
-                                <br/>
-                            <?php }; ?>
-                            <label><?php _e('Version','market'); ?></label>
-                            <input type="text" name="market_version[<?php echo $_r['pk_i_id']; ?>]" id="market_version_<?php echo $_r['pk_i_id']; ?>" value="<?php echo $_r['s_version']; ?>" />
-                            <br/>
-                            <?php foreach($market_versions as $v) { ?>
-                                <input type="checkbox" <?php echo ( market_is_checked($v, $_r['s_compatible']) ? 'checked="checked"' : '' ) ; ?> name="market_comp_versions[<?php echo $_r['pk_i_id']; ?>][<?php echo $v; ?>]" value="1" />
-                                <?php echo $v; ?>
-                            <?php }; ?>
-                            <?php if(osc_is_admin_user_logged_in()) { ?> 
-                            <label><?php _e('Enabled', 'market'); ?></label><input type="checkbox" name="market_enabled[<?php echo $_r['pk_i_id']; ?>]" value="1" <?php if($_r['b_enabled']==1){ echo 'checked'; };?>/>
-                            <?php }; ?>
-                            <br/>
-                            <a href="javascript:delete_market_file(<?php echo $_r['pk_i_id'] . ", " . $_r['fk_i_item_id'] . ", '" . $secret . "'" ;?>);"  class="delete"><?php _e('Delete', 'market') ; ?></a><br/>
-                            </p>
-                    </div>
-                <?php }
-            } ?>
-        <div id="market_files">
-            <div class="row">
-                <p><?php printf(__('Allowed extensions are %s. Any other file will not be uploaded', 'market'), osc_get_preference('allowed_ext', 'market')) ; ?></p>
-            </div>
-            <div class="row">
-                <input type="file" name="market_file_new" />
-                <br/>
-                <label><?php _e('Download URL','market'); ?></label>
-                <input type="text" name="market_download_url" id="market_download_url" value="" />
-                <br/>
-                <label><?php _e('Version','market'); ?></label>
-                <input type="text" name="market_version_new" id="market_version_new" value="" />
-                <br/>
-                <label><?php _e('Compatible with', 'market'); ?></label>
-                <br/>
-                <?php foreach($market_versions as $v) { ?>
-                    <input type="checkbox" name="market_new_comp_versions[<?php echo $v; ?>]" value="1" />
-                    <?php echo $v; ?>
-                <?php }; ?>
-            </div>
-        </div>
-        <div id="market_banner">
-            <div class="row">
-                <p><?php _e('Upload a banner', 'market') ; ?></p>
-            </div>
-            <?php if(isset($market['s_banner']) && $market['s_banner']!='') { ?>
-            <img src="<?php echo osc_base_url()."oc-content/uploads/market/".$market['s_banner']; ?>" />
-            <?php }; ?>
-            <div class="row">
-                <input type="file" name="market_banner" />
-            </div>
+
+<?php 
+    $item = __get('item');
+    if(@$item_id) {
+        $market = ModelMarket::newInstance()->findByItemId( $item_id );
+        $market['files'][0] = ModelMarket::newInstance()->getFileFromItem( $item_id );
+        View::newInstance()->_exportVariableToView("market_ad", $market);
+    }
+?>
+<style>
+    .input {
+        display: inline-block;
+        width: 208px;
+        height: 18px;
+        padding: 4px 6px;
+        font-size: 13px;
+        line-height: 18px;
+        color: #555;
+        background-color: white;
+        border: 1px solid #DDD;
+        border-radius: 3px;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+        -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+        vertical-align: top;
+    }
+</style>
+<h2><?php _e('Market attributes'); ?></h2>
+<?php if(!OC_ADMIN) { ?>
+<div style="margin-top:10px;margin-bottom:10px;">
+    <span style="font-style: italic;"><b><?php _e('NOTE', 'market'); ?>:</b> <?php _e('Once you have inserted the listing, through your my account you can add new market files','market');?></span>
+</div>
+<?php } ?>
+<div class="grid-row grid-100">
+    <h3><?php _e('Information', 'market'); ?></h3>
+    <div>
+        <?php if(osc_is_admin_user_logged_in()) { ?> 
+        <label><?php _e('Slug','market'); ?> <?php if(@$item_id) { ?><b>( <?php _e('Slug cannot be updated is used as ID','market'); ?>) </b><?php } ?></label>
+        <div>
+            <?php if(@$item_id) { ?>
+            <span class="input"><?php echo @$market['s_slug']; ?></span>
+            <input type="hidden" name="market_slug" id="market_slug" value="<?php echo @$market['s_slug']; ?>" />
+            <?php } else { ?>
+            <input <?php if(@$item_id){ echo "disabled";}?> type="text" name="market_slug" id="market_slug" value="<?php echo @$market['s_slug']; ?>" />
+            <?php } ?>
         </div>
     </div>
-</div>
+    <div style="clear: both;"></div>
+    <div>
+        <label><?php _e('Live Preview (in case of themes)','market'); ?></label>
+        <div>
+            <input type="text" name="market_preview" id="market_preview" value="<?php echo @$market['s_preview']; ?>" />
+        </div>
+        <?php }; ?>
+    </div>
+    <div style="clear: both;"></div>
+    <div id="market_banner">
+        <label><?php _e('Upload a banner', 'market') ; ?></label>
+        <div style="padding: 10px;background-color: #F3F3F3;border: solid 1px #DDD;border-radius: 4px;-webkit-border-radius: 4px;">
+            <input type="file" name="market_banner" />
+            <?php if(@$item_id) { ?><br/>(<?php _e('Banner will be overwritten if there is an existing one'); ?>)<?php } ?>
+        </div>
+    </div>
+        <?php if(isset($market['s_banner']) && $market['s_banner']!='') { ?>
+            <div id="banner">
+                <img src="<?php echo osc_base_url()."oc-content/uploads/market/".$market['s_banner']; ?>" />
+                <div class="clear"></div>
+                <a class="btn btn-red" href="javascript:delete_market_banner(<?php echo  @$market['fk_i_item_id'] . ", '" . $secret ."'";?>);"><?php _e('Remove image', 'market'); ?></a>
+                <div class="clear"></div>
+            </div>
+        <?php }; ?>
+    </div>
+    
+    <br/>
+    
+    <div class="clear"></div>
+    
 <script type="text/javascript">
-    var ufIndex = 0;
-    function gebi(id) { return document.getElementById(id); }
-    function ce(name) { return document.createElement(name); }
-    function re(id) {
-        var e = gebi(id);
-        e.parentNode.removeChild(e);
-    }
-
-
-    function delete_market_file(id, item_id, secret) {
+    
+    function delete_market_banner(item_id, secret) {
         var result = confirm('<?php echo __('This action can\\\'t be undone. Are you sure you want to continue?', 'market'); ?>');
         if(result) {
             $.ajax({
                 type: "POST",
-                url: '<?php echo osc_base_url(true); ?>?page=ajax&action=custom&ajaxfile=<?php echo osc_plugin_folder(__FILE__) . 'ajax.php';?>&paction=delete&id='+id+'&item='+item_id+'&secret='+secret,
+                url: '<?php echo osc_base_url(true); ?>?page=ajax&action=custom&ajaxfile=<?php echo osc_plugin_folder(__FILE__) . 'ajax.php';?>&paction=delete_banner&item='+item_id+'&secret='+secret,
                 dataType: 'json',
-                success: function(data){
+                success: function(data) {
                     if(data.error==0) {
-                        $("#"+id+"_"+item_id).remove();
+                        $('#banner').remove();
                     }
-                    var flash = $("#flash_js");
-                    var message = $('<div>').addClass('pubMessages').attr('id', 'FlashMessage').html(data.msg);
-                    flash.html(message);
-                    $("#FlashMessage").slideDown('slow').delay(3000).slideUp('slow');
+                    
+                    $(".jsMessage > p").html(data.msg);
+                    $(".jsMessage").slideDown('slow').delay(3000).slideUp('slow');
+                    scrollTo(0,0);
                 }
             });
         }
