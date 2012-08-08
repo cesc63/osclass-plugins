@@ -4,7 +4,7 @@ CREATE TABLE /*TABLE_PREFIX*/t_subscribers (
     b_active TINYINT(1) NOT NULL DEFAULT 1,
     d_subscription DATE DEFAULT NULL,
     d_unsubscribe DATE DEFAULT NULL,
-    e_source enum('web','osclass') NOT NULL default 'web',
+    e_source enum('footer','download','osclass','market','doc','blog') NOT NULL default 'footer',
     c_ip char(64) NOT NULL default '0.0.0.0',
 
         PRIMARY KEY (pk_i_id),

@@ -90,7 +90,7 @@ Plugin update URI:
 
                 if( Params::getParam('return_path') != '' ) {
                     $hash = '';
-                    if( in_array(Params::getParam('source'), array('web', 'market', 'doc', 'blog')) ) {
+                    if( in_array(Params::getParam('source'), array('footer', 'market', 'doc', 'blog')) ) {
                         $hash = '#subscribe-footer';
                     }
                     $redirectURL = Params::getParam('return_path') . '?subscribe_osclass=' . $return . $hash;
@@ -172,7 +172,7 @@ Plugin update URI:
             'd_subscription' => date('Y-m-d'),
             'c_ip'           => $_SERVER['REMOTE_ADDR']
         );
-        if( in_array(Params::getParam('source'), array('web', 'osclass', 'market', 'doc', 'blog')) ) {
+        if( in_array(Params::getParam('source'), array('footer', 'osclass', 'market', 'doc', 'blog', 'download')) ) {
             $aInsert['e_source'] = Params::getParam('source');
         }
 
