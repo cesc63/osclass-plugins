@@ -42,11 +42,11 @@ Plugin update URI:
             $locale = osc_current_user_locale() ;
 
             // get parameters
-            $name        = Params::getParam('yourName') ;
-            $email       = Params::getParam('yourEmail') ;
-            $phoneNumber = Params::getParam('yourPhoneNumber') ;
-            $website     = Params::getParam('yourWebsite') ;
-            $message     = Params::getParam('message') ;
+            $name        = Params::getParam('yourName');
+            $email       = Params::getParam('yourEmail');
+            $phoneNumber = Params::getParam('yourPhoneNumber');
+            $website     = Params::getParam('yourWebsite');
+            $message     = Params::getParam('message');
             if( osc_is_static_page() && (Params::getParam('become_an_expert') == 'submit') ) {
                 $aPage = Page::newInstance()->findByInternalName('email_become_an_expert') ;
                 header('Location: ' . osc_base_url() . 'page/become_an_expert') ;
@@ -56,6 +56,8 @@ Plugin update URI:
                 $aPage = Page::newInstance()->findByInternalName('email_premium_support') ;                
                 header('Location: ' . osc_base_url() . 'page/premium_support') ;
                 osc_add_flash_ok_message(__('Thank your for contacting us', 'forms')) ;
+
+                send_auto_reply_premium_support();
             }
 
             // if is submit
@@ -84,6 +86,31 @@ Plugin update URI:
             exit ;
         }
         osc_add_hook('init', 'submit_extra_forms') ;
+    }
+
+    function send_auto_reply_premium_support() {
+        $content = <<<CONTENT
+Hi!
+
+Thanks for your Osclass Premium Support request.
+
+Please note that Premium Support is a paid service and as such, is not carried out by the Osclass team. Your request will be sent to an external company.
+
+We will contact you with further instructions as soon as your request is processed.
+
+Yours sincerely,
+The Osclass Team
+CONTENT;
+        $params = array(
+            'from_name' => 'OSClass',
+            'from'      => 'info@osclass.org',
+            'to_name'   => Params::getParam('yourName'),
+            'to'        => Params::getParam('yourEmail'),
+            'subject'   => '[' . osc_page_title() . '] ' . __('Premium support', 'forms'),
+            'body'      => nl2br($content)
+        );
+
+        osc_sendMail($params);
     }
 
     if( !function_exists('get_dbCommand') ) {
