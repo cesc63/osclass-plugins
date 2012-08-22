@@ -35,7 +35,7 @@
         $text .= ' ' . strtolower($r['s_name']);
     }
 
-    $ga_url_builder = '?utm_source=alert&utm_medium=alert';
+    $ga_url_builder = '?utm_source=alert&utm_medium=email';
     if( $text != '' ) {
         $ga_url_builder .= sprintf('&utm_term=%s', osc_sanitizeString($text));
     }

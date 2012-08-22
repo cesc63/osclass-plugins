@@ -58,7 +58,7 @@ Plugin update URI:
             $aItem      = $mSearch->doSearch();
             $totalItems = $mSearch->count();
 
-            if( count($aItem) > 5 ) {
+            if( count($aItem) > 0 ) {
                 View::newInstance()->_exportVariableToView('items', $aItem);
                 // get email content
                 ob_start(); 
