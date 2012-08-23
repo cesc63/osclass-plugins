@@ -219,9 +219,13 @@
             if($result!==false) {
                 $file = $result->row();
                 if( count($file) > 0 ) {
-                    if($file['fk_i_category_id']==96) {
+                    $aCategoryPlugins       = explode(',', osc_get_preference('market_categories_plugins','market'));
+                    $aCategoryThemes        = explode(',', osc_get_preference('market_categories_theme','market'));
+                    $aCategoryLanguages     = explode(',', osc_get_preference('market_categories_languages','market'));
+                    
+                    if( in_array($file['fk_i_category_id'], $aCategoryThemes) ) {
                         $file['e_type'] = 'THEME';
-                    } else if($file['fk_i_category_id']==98) {
+                    } else if( in_array($file['fk_i_category_id'], $aCategoryLanguages) ) {
                         $file['e_type'] = 'LANGUAGE';
                     } else {
                         $file['e_type'] = 'PLUGIN';
@@ -759,6 +763,67 @@
             }
         }
         
+        /**
+         * Get random items given a type market file
+         *
+         * @param type $exclude_item_id
+         * @param string $type
+         * @param type $num
+         * @return type 
+         */
+        public function getRandom($exclude_item_id = null, $type = 'LATEST', $num = 3) 
+        {
+            if($type=='THEME') {
+                $catId = osc_get_preference('market_categories_theme','market'); // $catId = 96;
+            } else if($type=='LANGUAGE') {
+                $catId = osc_get_preference('market_categories_languages','market'); // $catId = 98;
+            } else if($type=='PLUGIN') {
+                $catId = osc_get_preference('market_categories_plugins','market'); // $catId = 97;
+            } else {
+                $type = '';
+                $catId = null;
+            }
+            
+            $start = $page*$this->pageSize;
+            $this->dao->select(
+                    "f.pk_i_id as pk_i_id"
+                    .", m.s_slug as s_update_url"
+                    .", m.s_banner as s_banner"
+                    .", m.s_preview as s_preview"
+                    .", f.s_file as s_source_file"
+                    .", f.s_compatible as s_compatible"
+                    .", f.s_version as s_version"
+                    .", f.s_download as s_download"
+                    .", i.fk_i_category_id as fk_i_category_id"
+                    .", i.dt_pub_date as dt_pub_date"
+                    .", i.dt_mod_date as dt_mod_date"
+                    .", i.s_contact_name as s_contact_name"
+                    .", m.fk_i_item_id as fk_i_item_id"
+                    .", d.s_title as s_title"
+                    .", d.s_description as s_description"
+                    );
+            $this->dao->from($this->getTable()." m");
+            $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
+            $this->dao->join(DB_TABLE_PREFIX."t_item i ", "i.pk_i_id = m.fk_i_item_id", "LEFT");
+            $this->dao->join(DB_TABLE_PREFIX."t_item_description d", "d.fk_i_item_id = m.fk_i_item_id", "LEFT");
+            $this->dao->where('f.b_enabled = 1');
+            if($catId!=null) {
+                $this->dao->where('i.fk_i_category_id IN ('. $catId .')' );
+            }
+            if($exclude_item_id != null ) {
+                $this->dao->whereNotIn('i.pk_i_id', $exclude_item_id);
+            }
+            $this->dao->orderBy('RAND()');
+            $this->dao->limit( 0, $num);
+            
+            $result = $this->dao->get() ;
+            
+            if($result===false) {
+                return array();
+            }
+            
+            return $result->result();    
+        }
         /*
          * General purpouse function
          */
