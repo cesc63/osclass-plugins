@@ -784,7 +784,6 @@
                 $catId = null;
             }
             
-            $start = $page*$this->pageSize;
             $this->dao->select(
                     "f.pk_i_id as pk_i_id"
                     .", m.s_slug as s_update_url"
