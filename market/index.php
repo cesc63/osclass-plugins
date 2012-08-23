@@ -305,7 +305,7 @@ Plugin update URI:
             background-position:0px -48px;
         }
         #plugin_market .ico:hover,
-        .current #market .ico{
+        .current #plugin_market .ico{
             background-position:0px -0px;
         }
         body.compact #plugin_market .ico{
