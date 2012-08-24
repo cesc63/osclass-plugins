@@ -19,18 +19,21 @@ if ( osc_is_web_user_logged_in() ) {
         $user   = User::newInstance()->findByPrimaryKey($userId);
     }
 ?>
-<?php if($paction != 'done') { ?>
-<div>
-    <p><?php _e('Are you unsubcribing your account, all your listings and alerts will be removed.', 'remove_users'); ?></p>
-    <p><?php _e('Are you sure?', 'remove_users'); ?></p>
-    <form action="<?php echo osc_render_file_url(osc_plugin_folder(__FILE__) . 'confirm_unsubscribe.php');?>"  method="POST">
-        <input type="hidden" value="<?php echo $userId; ?>" name="userId"/>
-        <input type="hidden" value="<?php echo $user['s_secret']; ?>" name="secret"/>
-        <input type="hidden" value="done" name="paction"/>
-        <input type="submit" <?php _e( 'I\'m sure, unsubscribe me', 'remove_users');?>/>
-        <a href="<?php echo osc_user_dashboard_url();?>"><?php _e( 'Cancel', 'remove_users');?></a>
-    </form>
-</div>
+<div class="content user_forms">
+    <div class="inner">
+    <?php if($paction != 'done') { ?>
+       <h1><?php _e('Unsuscribe', 'remove_users'); ?></h1>
+        <form action="<?php echo osc_render_file_url(osc_plugin_folder(__FILE__) . 'confirm_unsubscribe.php');?>"  method="POST">
+            <p><?php _e('Are you unsubcribing your account, all your listings and alerts will be removed.', 'remove_users'); ?></p><br/>
+            <p><?php _e('Are you suunsubcribingre?', 'remove_users'); ?></p><br/>
+            <input type="hidden" value="<?php echo $userId; ?>" name="userId"/>
+            <input type="hidden" value="<?php echo $user['s_secret']; ?>" name="secret"/>
+            <input type="hidden" value="done" name="paction"/>
+            <button type="submit"> <?php _e( 'I\'m sure, unsubscribe me', 'remove_users');?></button>
+            &nbsp;
+            <button onClick="javascript:window.location = '<?php echo osc_user_dashboard_url();?>';return false;"><?php _e( 'Cancel', 'remove_users');?></button>
+        </form>
+    
 <?php } else { ?>
     <?php if($res) { ?>
     <?php _e("Unsubscribed succesfully.", 'remove_users'); ?>
@@ -41,3 +44,5 @@ if ( osc_is_web_user_logged_in() ) {
 <?php } ?>
 
 <?php } ?>
+    </div>
+</div>
