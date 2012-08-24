@@ -116,6 +116,7 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                 <td valign="top"> 
                     <div id="market_files">
                         <div>
+                            <label><?php _e('File version', 'market'); ?></label>
                             <?php if($isEdit) { ?>
                             <span class="input"><?php echo @$file_version; ?></span>
                             <input type="hidden" name="market_version_new" id="market_version_new" value="<?php echo osc_esc_html( @$file_version ); ?>" />
