@@ -28,7 +28,7 @@ if ( osc_is_web_user_logged_in() ) {
             <input type="hidden" value="<?php echo $userId; ?>" name="userId"/>
             <input type="hidden" value="<?php echo $user['s_secret']; ?>" name="secret"/>
             <input type="hidden" value="done" name="paction"/>
-            <button type="submit"> <?php _e( 'I\'m sure, ', 'remove_users');?></button>
+            <button type="submit"> <?php _e( 'I\'m sure', 'remove_users');?></button>
             &nbsp;
             <button onClick="javascript:window.location = '<?php echo osc_user_dashboard_url();?>';return false;"><?php _e( 'Cancel', 'remove_users');?></button>
         </form>
