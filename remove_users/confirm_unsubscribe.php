@@ -22,7 +22,7 @@ if ( osc_is_web_user_logged_in() ) {
 <div class="content user_forms">
     <div class="inner">
     <?php if($paction != 'done') { ?>
-       <h1><?php _e('Unsuscribe', 'remove_users'); ?></h1>
+       <h1><?php _e('Unsubscribe', 'remove_users'); ?></h1>
         <form action="<?php echo osc_render_file_url(osc_plugin_folder(__FILE__) . 'confirm_unsubscribe.php');?>"  method="POST">
             <p><?php _e('All your listings and alerts will be removed.', 'remove_users'); ?></p><br/>
             <input type="hidden" value="<?php echo $userId; ?>" name="userId"/>
