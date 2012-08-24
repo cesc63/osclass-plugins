@@ -10,11 +10,6 @@ Short Name: remove_users
 Plugin update URI: remove-users
 */
 
-function remove_users_unsubscribe_user( $userId )
-{
-     
-}
-
 function _add_menu_remove_account( $aMenu )
 {
     $logout = array_pop($aMenu);
@@ -27,11 +22,5 @@ function _add_menu_remove_account( $aMenu )
 }
 
 osc_add_filter('user_menu_filter', '_add_menu_remove_account');
-
-function remove_users_redirect_to($url) {
-    header('Location: ' . $url);
-    exit;
-}
-
 
 ?>
