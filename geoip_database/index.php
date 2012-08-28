@@ -46,7 +46,7 @@ Plugin update URI: geoip_database
         if( in_array($country['name'], array('SN')) ) {
             require_once(osc_lib_path() . 'osclass/helpers/hErrors.php');
             $title   = 'OSClass &raquo; Error';
-            $message = 'Your not allowed to visit the site from your country';
+            $message = "You're not allowed to visit the site from your country";
             osc_die($title, $message);
         }
     }
