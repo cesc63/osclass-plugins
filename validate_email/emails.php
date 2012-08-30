@@ -6,8 +6,10 @@ if( $_REQUEST['contactEmail'] != '' ) {
     $email = $_REQUEST['yourEmail'];
 } else if( $_REQUEST['friendEmail'] != '' ) {
     $email = $_REQUEST['friendEmail'];
+} else if( $_REQUEST['new_email'] != '' ) {
+    $email = $_REQUEST['new_email'];
 } else {
-    return false;
+    echo "false";
 }
 
 list($user, $domain) = split('@', $email);
