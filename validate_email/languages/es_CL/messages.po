@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Validate email\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-08-30 09:56+0100\n"
-"PO-Revision-Date: 2012-08-30 10:05+0100\n"
+"PO-Revision-Date: 2012-08-30 11:13+0100\n"
 "Last-Translator: carlos <carlos@osclass.org>\n"
 "Language-Team: OSClass <info@osclass.org>\n"
 "MIME-Version: 1.0\n"
@@ -22,7 +22,7 @@ msgstr ""
 #: /Users/ssuareza/projects/OSClass/oc-content/plugins/validate_email/index.php:98
 #: /Users/ssuareza/projects/OSClass/oc-content/plugins/validate_email/index.php:118
 msgid "Email: this field is required"
-msgstr ""
+msgstr "E-mail: este campo es obligatorio."
 
 #: /Users/ssuareza/projects/OSClass/oc-content/plugins/validate_email/index.php:31
 #: /Users/ssuareza/projects/OSClass/oc-content/plugins/validate_email/index.php:51
