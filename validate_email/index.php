@@ -6,20 +6,19 @@ Description: Validate email domain at new user
 Version: 1.0
 Author: OSClass
 Author URI: http://www.osclass.org/
-Short Name Validate-email
+Short Name: validate_email
 Plugin update URI: validate_email
 */
-    
+
 function validate_email_check_domain_js() {
     $section  = osc_get_osclass_section() ;
     $location = osc_get_osclass_location() ;
-    error_log($section. "    " .$location);
+    
     /*
      * ADD ITEM
      */
     if( $section == 'item_add' && $location == 'item' ) {
     ?>
-<!-- requrire location -->
 <script type="text/javascript">
     $(document).ready(function() {
         $('#contactEmail').rules("add", {
@@ -115,7 +114,7 @@ function validate_email_check_domain_js() {
         email: true,
         remote: '<?php echo osc_base_url() . 'oc-content/plugins/validate_email/emails.php';?>',
         messages: {
-            required: "<?php _e("Email: this field is required", ''); ?>",
+            required: "<?php _e("Email: this field is required", 'validate_email'); ?>",
             remote: "<?php _e("Invalid email address", 'validate_email'); ?>"
         }});
     }) ;
@@ -125,7 +124,6 @@ function validate_email_check_domain_js() {
     
 }
 
-osc_add_hook('header', 'validate_email_metadata_js');
 osc_add_hook('footer', 'validate_email_check_domain_js') ;
 
 ?>
