@@ -8,6 +8,8 @@ if( $_REQUEST['contactEmail'] != '' ) {
     $email = $_REQUEST['friendEmail'];
 } else if( $_REQUEST['new_email'] != '' ) {
     $email = $_REQUEST['new_email'];
+} else if( $_REQUEST['s_email'] != '' ) {
+    $email = $_REQUEST['s_email'];
 } else {
     echo "false";
 }
