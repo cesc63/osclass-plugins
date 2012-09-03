@@ -810,13 +810,12 @@
                 $this->dao->where('i.fk_i_category_id IN ('. $catId .')' );
             }
             if($exclude_item_id != null ) {
-                $this->dao->whereNotIn('i.pk_i_id', $exclude_item_id);
+                $this->dao->where('i.pk_i_id NOT IN ('. $exclude_item_id.')');
             }
             $this->dao->orderBy('RAND()');
             $this->dao->limit( 0, $num);
-            
+            error_log( $this->dao->_getSelect());
             $result = $this->dao->get() ;
-            
             if($result===false) {
                 return array();
             }
