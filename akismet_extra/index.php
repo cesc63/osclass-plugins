@@ -3,13 +3,13 @@
 Plugin Name: Extra akismet
 Plugin URI: http://www.osclass.org/
 Description: Use Akismet in contact forms
-Version: 0.2
+Version: 0.3
 Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: akismet_item_contact
 */
 
-    define('AKISMET_EXTRA_VERSION', '0.2');
+    define('AKISMET_EXTRA_VERSION', '0.3');
     define('AKISMET_ITEM_CONTACT_TABLE', DB_TABLE_PREFIX . 't_item_contact');
     define('AKISMET_ITEM_SEND_FRIEND_TABLE', DB_TABLE_PREFIX . 't_item_send_friend');
     define('AKISMET_CONTACT_TABLE', DB_TABLE_PREFIX . 't_contact');
@@ -186,6 +186,62 @@ Short Name: akismet_item_contact
             }
         }
         osc_add_hook('item_form_post', 'akismet_add_listing');
+    }
+
+    if( !function_exists('akismet_set_listing_ham') ) {
+        function akismet_set_listing_ham($itemID) {
+            if( !osc_akismet_key() ) {
+                return false;
+            }
+
+            $aItem = Item::newInstance()->findByPrimaryKey($itemID);
+
+            if( count($aItem) == 0 ) {
+                return false;
+            }
+            View::newInstance()->_exportVariableToView('item', $aItem);
+
+            require_once( osc_lib_path() . 'Akismet.class.php' );
+            $akismet = new Akismet(osc_base_url(), osc_akismet_key());
+            $akismet->setUserIP($aItem['s_ip']);
+            $akismet->setReferrer('');
+            $akismet->setPermalink(osc_item_url());
+            $akismet->setCommentType('listing');
+            $akismet->setCommentAuthor($aItem['s_contact_name']);
+            $akismet->setCommentAuthorEmail($aItem['s_contact_email']);
+            $akismet->setCommentContent(sprintf('%s %s', $aItem['s_title'], $aItem['s_description']));
+            $akismet->submitHam();
+            return true;
+        }
+        osc_add_hook('item_spam_off', 'akismet_set_listing_ham');
+    }
+
+    if( !function_exists('akismet_set_listing_spam') ) {
+        function akismet_set_listing_spam($itemID) {
+            if( !osc_akismet_key() ) {
+                return false;
+            }
+
+            $aItem = Item::newInstance()->findByPrimaryKey($itemID);
+
+            if( count($aItem) == 0 ) {
+                return false;
+            }
+            View::newInstance()->_exportVariableToView('item', $aItem);
+
+            require_once( osc_lib_path() . 'Akismet.class.php' );
+            $akismet = new Akismet(osc_base_url(), osc_akismet_key());
+            $akismet->setUserIP($aItem['s_ip']);
+            $akismet->setReferrer('');
+            $akismet->setPermalink(osc_item_url());
+            $akismet->setCommentType('listing');
+            $akismet->setCommentAuthor($aItem['s_contact_name']);
+            $akismet->setCommentAuthorEmail($aItem['s_contact_email']);
+            $akismet->setCommentContent(sprintf('%s %s', $aItem['s_title'], $aItem['s_description']));
+            $akismet->submitSpam();
+            return true;
+        }
+        osc_add_hook('item_spam_on', 'akismet_set_listing_spam');
     }
 
     function akismet_spam_message_die() {
