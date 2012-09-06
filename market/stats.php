@@ -40,6 +40,30 @@ if( $type == '') {
 $items = array();
 $items = market_stats_all($type, $item_id);
 
+$from_date = date('Y-m-d H:i:s');
+if( Params::getParam('type_stat') == 'week' ) {
+    $from_date = date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m"), date("d") - 70, date("Y")) );
+} else if( Params::getParam('type_stat') == 'month' ) {
+    $from_date = date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m") - 10, date("d"), date("Y")) );
+} else {
+    $from_date = date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m"), date("d") - 10, date("Y")) );
+}
+
+
+
+// all -> plugin top 10 , themes top 10 
+if( $type == 'all' ) {
+    $aTopPlugins = ModelMarket::newInstance()->getTop($from_date, 'plugins');
+    $aTopThemes  = ModelMarket::newInstance()->getTop($from_date, 'themes');
+    
+} else if( $type == 'plugins') {
+    $aTopPlugins = ModelMarket::newInstance()->getTop($from_date, $type);
+} else if( $type == 'themes') {
+    $aTopThemes  = ModelMarket::newInstance()->getTop($from_date, $type);
+} else if( $type == 'languages') {
+//    $aTopLanguages = ModelMarket::newInstance()->getTop($from_date, $type);
+}
+
 function market_stats_all($type, $item_id) 
 { 
     $items = array();
@@ -168,14 +192,15 @@ function market_stats_all($type, $item_id)
             <?php } ?>
         </div>
     </div>
+   
     <div class="grid-row grid-100 clear">
         <div class="row-wrapper">
             <div class="widget-box">
                 <div class="widget-box-title">
-                    <h3><?php _e('New listing'); ?> - <?php _e('Total', 'market'); ?> <?php echo $acomulate; ?></h3>
+                    <h3><?php _e('Downloads', 'market'); ?> - <b><?php echo $acomulate;?></b></h3>
                 </div>
                 <div class="widget-box-content">
-                    <b class="stats-title"><?php _e('Number of new listings'); ?></b>
+                    <b class="stats-title"><?php _e('Top 10'); ?></b>
                     <div id="placeholder" class="graph-placeholder" style="height:150px">
                         <?php if( count($items) == 0 ) {
                             _e("There're no statistics yet") ;
@@ -185,4 +210,57 @@ function market_stats_all($type, $item_id)
             </div>
         </div>
     </div>
+    
+     <?php if($type=='all' || $type=='plugins') { ?>
+     <div class="grid-row grid-50 clear">
+         <div class="row-wrapper">
+            <div class="widget-box">
+                <div class="widget-box-title">
+                    <h3><?php _e('Top 10 Plugins', 'market'); ?></h3>
+                </div>
+                <div class="widget-box-content" style="height: 220px;overflow-y: auto;">
+                    <div id="placeholder" style="height:150px">
+                        <table class="table" cellpadding="0" cellspacing="0">
+                        <tbody>
+                        <?php foreach( $aTopPlugins as $auxPlugin) { ?>
+                            <?php View::newInstance()->_exportVariableToView('item', $auxPlugin) ; ?>
+                            <tr>
+                                <td class="children-cat"><a href="<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php').'?itemId='.osc_item_id(); ?>"><?php echo osc_item_title();?></a></td>
+                                <td><?php echo $auxPlugin['total'];?></td>
+                            </tr>
+                        <?php } ?> 
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php } ?>
+    <?php if($type=='all' || $type=='themes') { ?>
+    <div class="grid-row grid-50">
+         <div class="row-wrapper">
+            <div class="widget-box">
+                <div class="widget-box-title">
+                    <h3><?php _e('Top 10 Themes', 'market'); ?></h3>
+                </div>
+                <div class="widget-box-content" style="height: 220px;overflow-y: auto;">
+                    <div id="placeholder" style="height:150px">
+                        <table class="table" cellpadding="0" cellspacing="0">
+                        <tbody>
+                        <?php foreach( $aTopThemes as $auxTheme) { ?>
+                            <?php View::newInstance()->_exportVariableToView('item', $auxTheme) ; ?>
+                            <tr>
+                                <td class="children-cat"><a href="<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php').'?itemId='.osc_item_id(); ?>"><?php echo osc_item_title();?></a></td>
+                                <td><?php echo $auxTheme['total'];?></td>
+                            </tr>
+                        <?php } ?> 
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php } ?>
 </div>
