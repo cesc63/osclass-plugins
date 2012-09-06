@@ -110,4 +110,14 @@ Plugin update URI:
     $capability = 'moderator';
 
     osc_add_admin_menu_page($menu_title, $url, $menu_id, $capability);
+    /*
+    osc_add_filter('current_admin_menu_items','my_custom_items_active');
+    function my_custom_items_active($class){
+     if(Params::getParam('page') == 'items'){
+        return 'current';
+        } else {
+            return $class;
+        }
+    }
+    */
 ?>
