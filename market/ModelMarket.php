@@ -568,7 +568,6 @@
             }
             
             if($aCategory != null) {
-                
                 $this->dao->where(DB_TABLE_PREFIX.'t_item.fk_i_category_id IN ('.$aCategory.') ');
             }
             
@@ -579,6 +578,48 @@
             $result = $this->dao->get() ;
             return $result->result() ;
         } 
+        
+        /*
+         * Get download stats, 10 month, 10 week, 10 day
+         * $type = all , plugins, themes, languages
+         * $from_date -> datetime
+         * 
+         */
+        public function getTop($from_date, $type = 'all', $limit = 10) 
+        {
+            $this->dao->select('count(1) as total, '.DB_TABLE_PREFIX.'t_market_stats.fk_i_market_id as pk_i_id, '.DB_TABLE_PREFIX.'t_item.fk_i_category_id') ;
+            $this->dao->groupBy(DB_TABLE_PREFIX.'t_market_stats.fk_i_market_id') ;   
+            
+            $this->dao->join(DB_TABLE_PREFIX.'t_market', DB_TABLE_PREFIX.'t_market.pk_i_id = '.DB_TABLE_PREFIX.'t_market_stats.fk_i_market_id');
+            $this->dao->join(DB_TABLE_PREFIX.'t_item', DB_TABLE_PREFIX.'t_item.pk_i_id = '.DB_TABLE_PREFIX.'t_market.fk_i_item_id');
+            
+            $aCategory = null;
+            if($type == 'all') {
+                // nothing todo
+            } else if($type == 'plugins') {
+                // get plugin categories .... 
+                $aCategory    = osc_get_preference('market_categories_plugins','market');
+            } else if($type == 'themes') {
+                // get themes categories ...
+                $aCategory    = osc_get_preference('market_categories_theme','market');
+            } else if($type == 'languages') {
+                // get languages categories ...
+                $aCategory    = osc_get_preference('market_categories_languages','market');
+            }
+            
+            if($aCategory != null) {
+                $this->dao->where(DB_TABLE_PREFIX.'t_item.fk_i_category_id IN ('.$aCategory.') ');
+            }
+            
+            $this->dao->from(DB_TABLE_PREFIX."t_market_stats") ;
+            $this->dao->where("dt_date > '$from_date'") ;
+            $this->dao->orderBy('total', 'DESC') ;
+            $this->dao->limit(0, $limit);
+            
+            $result = $this->dao->get() ;
+            return Item::newInstance()->extendData( $result->result() );
+        } 
+        
         /*
          * Get plugins
          */
@@ -785,7 +826,7 @@
             }
             
             $this->dao->select(
-                    "f.pk_i_id as pk_i_id"
+                    "DISTINCT i.pk_i_id as pk_i_id"
                     .", m.s_slug as s_update_url"
                     .", m.s_banner as s_banner"
                     .", m.s_preview as s_preview"
@@ -812,6 +853,7 @@
             if($exclude_item_id != null ) {
                 $this->dao->where('i.pk_i_id NOT IN ('. $exclude_item_id.')');
             }
+            $this->dao->groupBy('pk_i_id');
             $this->dao->orderBy('RAND()');
             $this->dao->limit( 0, $num);
             error_log( $this->dao->_getSelect());
