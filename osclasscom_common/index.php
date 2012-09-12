@@ -55,6 +55,7 @@ Plugin update URI:
     <?php }
     }
     osc_add_hook('header', 'osclass_common_favicon_theme');
+    osc_add_hook('admin_login_header', 'osclass_common_favicon_theme');
 
     function osclass_common_generator() { ?>
         <meta name="generator" content="Osclass.com" />
@@ -71,4 +72,23 @@ Plugin update URI:
     <?php }
     osc_add_hook('admin_content_footer', 'osclass_common_footer');
     osc_remove_hook('admin_footer', 'admin_content_footer');
+
+    /* admin login */
+    function osclass_common_admin_url($url) {
+        return 'http://osclass.com/';
+    }
+    osc_add_filter('login_admin_url', 'osclass_common_admin_url');
+    function osclass_common_admin_title($title) {
+        return 'Osclass.com';
+    }
+    osc_add_filter('login_admin_title', 'osclass_common_admin_title');
+    function osclass_common_admin_image($image_url) {
+        return osc_plugin_url(__FILE__) . 'images/osclass-logo.gif';
+    }
+    osc_add_filter('login_admin_image', 'osclass_common_admin_image');
+    function osclass_common_admin_css() {
+        echo '<link type="text/css" href="' . osc_plugin_url(__FILE__) . 'css/login.css' . '" media="screen" rel="stylesheet" />' . PHP_EOL;
+    }
+    osc_add_hook('admin_login_header', 'osclass_common_admin_css');
+
     /* file end: show_ip_manage_listings/index.php */

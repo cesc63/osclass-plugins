@@ -1,0 +1,29 @@
+form {
+    padding-left: 465px;
+    padding-right: 25px;
+}
+#login h1 {
+    margin-left: 25px;
+    margin-top:0;
+}   
+#login h1 a {
+    background-image: url(../images/osclass-logo.gif);
+}
+.flashmessage {
+    margin: 5px 30px 15px 470px;
+}
+body.recover #nav, body.forgot #nav {
+    padding-right: 30px;
+}
+#nav {
+    padding-left: 470px;
+    text-align: left;
+}
+.submit input {
+    background-color: #522c76;
+}
+a.forgot,
+#nav a,
+a{
+    color: #522c76;
+}
