@@ -9,10 +9,11 @@ Author URI: http://www.osclass.org/
 Plugin update URI: 
 */
  
-    //Redirect to Dashboard    
+//Redirect to Dashboard    
     osc_add_hook('init_admin','init_admin_fn');
     function init_admin_fn(){
-        if(Params::getParam('page') == '' && Params::getParam('action') !== 'logout') {
+        //var_dump(osc_get_osclass_location());
+        if(Params::getParam('page') == ''){
             redirect_to_url(osc_admin_render_plugin_url('jobboard/dashboard.php'));
         }
     }
@@ -109,14 +110,27 @@ Plugin update URI:
     $capability = 'moderator';
 
     osc_add_admin_menu_page($menu_title, $url, $menu_id, $capability);
-    /*
-    osc_add_filter('current_admin_menu_items','my_custom_items_active');
-    function my_custom_items_active($class){
-     if(Params::getParam('page') == 'items'){
-        return 'current';
-        } else {
-            return $class;
-        }
+
+
+function corporateboard_titles($title) {
+    $page = Params::getParam('page');
+    $action = Params::getParam('action');
+    switch($page) {
+        case 'appearance':
+            $file = Params::getParam('file');
+            if($file=='oc-content/themes/corporateboard/admin/settings.php') {
+                $title = preg_replace('|^(.*)&raquo;|', __('Settings','jobboard').' &raquo;', $title);
+            }
+            break;
+        default:
+            break;
     }
-    */
+    return $title;
+}
+osc_add_filter('admin_title', 'corporateboard_titles', 9);
+
+
+
+    
+    
 ?>
