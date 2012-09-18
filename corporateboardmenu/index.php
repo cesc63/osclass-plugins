@@ -6,12 +6,11 @@ Description: Corporateboardmenu
 Version: 0.9
 Author: OSClass
 Author URI: http://www.osclass.org/
-Plugin update URI: 
+Plugin update URI:
 */
 
-    //Redirect to Dashboard    
     osc_add_hook('init_admin','init_admin_fn');
-    function init_admin_fn(){
+    function init_admin_fn() {
         if(Params::getParam('page') == '' && Params::getParam('action') !== 'logout') {
             redirect_to_url(osc_admin_render_plugin_url('jobboard/dashboard.php'));
         }
@@ -61,3 +60,5 @@ Plugin update URI:
     $icon_url   = null;
     $capability = 'moderator';
     osc_add_admin_menu_page($menu_title, $url, $menu_id, $capability);
+
+    /* file end: corporateboardmenu/index.php */

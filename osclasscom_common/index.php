@@ -90,5 +90,13 @@ Plugin update URI:
         echo '<link type="text/css" href="' . osc_plugin_url(__FILE__) . 'css/login.css' . '" media="screen" rel="stylesheet" />' . PHP_EOL;
     }
     osc_add_hook('admin_login_header', 'osclass_common_admin_css');
+    
+
+    function osclass_common_titles($title) {
+        $title = preg_replace('|osclass$|i', 'Osclass.com', $title);
+        return $title;
+    }
+    osc_add_filter('admin_title', 'osclass_common_titles', 10);
+    
 
     /* file end: osclasscom_common/index.php */
