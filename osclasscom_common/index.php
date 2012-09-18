@@ -7,7 +7,7 @@ Version: 0.9
 Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: osclasscom_common
-Plugin update URI: 
+Plugin update URI:
 */
 
     define('OSCLASSCOM_COMMON_VERSION', '0.9');
@@ -42,7 +42,7 @@ Plugin update URI:
 
         return $fav;
     }
-    osc_add_filter('admin_favicons', 'osclasscom_common_favicon');    
+    osc_add_filter('admin_favicons', 'osclasscom_common_favicon');
 
     function osclass_common_favicon_theme() {
         $favicons = osc_apply_filter('admin_favicons', array());
@@ -71,7 +71,7 @@ Plugin update URI:
     <div class="clear"></div>
     <?php }
     osc_add_hook('admin_content_footer', 'osclass_common_footer');
-    osc_remove_hook('admin_footer', 'admin_content_footer');
+    osc_remove_hook('admin_content_footer', 'admin_footer_html');
 
     /* admin login */
     function osclass_common_admin_url($url) {
@@ -91,4 +91,4 @@ Plugin update URI:
     }
     osc_add_hook('admin_login_header', 'osclass_common_admin_css');
 
-    /* file end: show_ip_manage_listings/index.php */
+    /* file end: osclasscom_common/index.php */
