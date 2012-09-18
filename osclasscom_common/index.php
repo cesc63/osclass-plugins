@@ -49,7 +49,7 @@ Plugin update URI:
         ?>
         <!-- favicons
         ================================================== -->
-<?php 
+<?php
         foreach($favicons as $f) { ?>
         <link <?php if($f['rel'] !== '') { ?>rel="<?php echo $f['rel']; ?>" <?php } if($f['sizes'] !== '') { ?>sizes="<?php echo $f['sizes']; ?>" <?php } ?>href="<?php echo $f['href']; ?>">
     <?php }
@@ -65,13 +65,12 @@ Plugin update URI:
 
     function osclass_common_footer() { ?>
     <div class="float-left">
-        <?php printf(__('Powered by <a href="%s" target="_blank">Osclass</a>'), 'http://osclass.org/'); ?> -
-        <a title="<?php _e('Contact'); ?>" href="#contact"><?php _e('Contact'); ?></a>
+        <?php printf(__('Powered by <a href="%s" target="_blank">Osclass</a>', 'osclasscom_common'), 'http://osclass.org/'); ?> -
+        <a title="<?php _e('Contact', 'osclasscom_common'); ?>" href="#contact"><?php _e('Contact', 'osclasscom_common'); ?></a>
     </div>
     <div class="clear"></div>
     <?php }
     osc_add_hook('admin_content_footer', 'osclass_common_footer');
-    osc_remove_hook('admin_content_footer', 'admin_footer_html');
 
     /* admin login */
     function osclass_common_admin_url($url) {
@@ -90,13 +89,16 @@ Plugin update URI:
         echo '<link type="text/css" href="' . osc_plugin_url(__FILE__) . 'css/login.css' . '" media="screen" rel="stylesheet" />' . PHP_EOL;
     }
     osc_add_hook('admin_login_header', 'osclass_common_admin_css');
-    
 
     function osclass_common_titles($title) {
         $title = preg_replace('|osclass$|i', 'Osclass.com', $title);
         return $title;
     }
     osc_add_filter('admin_title', 'osclass_common_titles', 10);
-    
+
+    function osclasscom_common_init_admin() {
+        osc_remove_hook('admin_content_footer', 'admin_footer_html');
+    }
+    osc_add_hook('init_admin', 'osclasscom_common_init_admin');
 
     /* file end: osclasscom_common/index.php */
