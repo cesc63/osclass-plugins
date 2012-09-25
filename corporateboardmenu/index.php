@@ -16,6 +16,24 @@ Plugin update URI:
         }
     }
 
+    osc_remove_admin_menu_page('dash');
+    osc_remove_admin_menu_page('items');
+    osc_remove_admin_submenu_page('items','items_manage');
+    osc_remove_admin_submenu_page('items','items_reported');
+    osc_remove_admin_submenu_page('items','items_media');
+    osc_remove_admin_submenu_page('items','items_comments');
+    osc_remove_admin_submenu_page('items','items_cfields');
+    osc_remove_admin_submenu_page('items','items_settings');
+    osc_remove_admin_menu_page('categories');
+    osc_remove_admin_menu_page('appearance');
+    osc_remove_admin_menu_page('plugins');
+    osc_remove_admin_menu_page('stats');
+    osc_remove_admin_menu_page('settings');
+    osc_remove_admin_menu_page('pages');
+    osc_remove_admin_menu_page('users');
+    osc_remove_admin_menu_page('tools');
+    osc_remove_admin_menu_page('jobboard');
+
     //Dashborard
     $menu_title = __('Dashboard', 'corporateboardmenu');
     $url        = osc_admin_render_plugin_url('jobboard/dashboard.php');
