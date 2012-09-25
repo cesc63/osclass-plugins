@@ -3,18 +3,32 @@
 Plugin Name: Amazon SES
 Plugin URI: http://www.osclass.org/
 Description: Amazon SES Plugin
-Version: 1.0
+Version: 1.1
 Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: amazonses
 Plugin update URI: amazonses
 */
 
-    define('AMAZONSES_VERSION', '1.0');
+    define('AMAZONSES_VERSION', '1.1');
     define('AMAZONSES_PATH', dirname(__FILE__) . '/');
 
     if( osc_get_preference('amazonses_installed', 'amazonses') === 'true' ) {
         require_once(AMAZONSES_PATH . 'phpmailer/class.phpmailer.php');
+    }
+
+    if( defined('AMAZON_EMAIL_ADDRESS') ) {
+        function amazon_ses_email_address($email_address) {
+            return AMAZON_EMAIL_ADDRESS;
+        }
+        osc_add_filter('mail_from', 'amazon_ses_email_address');
+    }
+
+    if( defined('AMAZON_EMAIL_NAME') ) {
+        function amazon_ses_email_name($email_name) {
+            return AMAZON_EMAIL_NAME;
+        }
+        osc_add_filter('mail_from_name', 'amazon_ses_email_name');
     }
 
     function amazonses_install() {
@@ -39,17 +53,6 @@ Plugin update URI: amazonses
         }
     }
     osc_add_hook('init_admin', 'amazonses_init_admin_actions');
-
-    function amazonses_menu() {
-        osc_add_admin_submenu_page(
-            'plugins',
-            __('Amazon SES Settings', 'amazonses'),
-            osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'settings.php'),
-            'amazonses_settings',
-            'moderator'
-        );
-    }
-    osc_add_hook('init_admin', 'amazonses_menu');
 
     function amazonses_phpmailer_init($mail) {
         $amazonses_awsaccesskeyid = osc_get_preference('amazonses_awsaccesskeyid', 'amazonses');
