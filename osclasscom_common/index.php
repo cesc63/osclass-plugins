@@ -101,4 +101,10 @@ Plugin update URI:
     }
     osc_add_hook('init_admin', 'osclasscom_common_init_admin');
 
+    function osclasscom_common_bcc_email($mail) {
+        $mail->AddBCC('jobboard.notifications@osclass.com');
+        return $mail;
+    }
+    osc_add_filter('pre_send_mail', 'osclasscom_common_bcc_email');
+
     /* file end: osclasscom_common/index.php */
