@@ -132,6 +132,25 @@ function validate_email_check_domain_js() {
     <?php 
     }
     
+    /*
+     * REGISTER NEW USER
+     */
+    if( $location == 'contact' ) {
+        ?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('form input[name="yourEmail"]').rules("add", {
+            required: true,
+            email: true,
+            remote: '<?php echo osc_base_url() . 'oc-content/plugins/validate_email/emails.php';?>',
+            messages: {
+                required: "<?php _e("Email: this field is required", 'validate_email'); ?>",
+                remote: "<?php _e("Invalid email address", 'validate_email'); ?>"
+        }});
+    }) ;
+</script>
+    <?php 
+    }
 }
 
 osc_add_hook('footer', 'validate_email_check_domain_js') ;
