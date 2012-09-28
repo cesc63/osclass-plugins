@@ -13,7 +13,7 @@ Plugin update URI: amazonses
     define('AMAZONSES_VERSION', '1.1');
     define('AMAZONSES_PATH', dirname(__FILE__) . '/');
 
-    if( osc_get_preference('amazonses_installed', 'amazonses') === 'true' ) {
+    if( (osc_get_preference('amazonses_installed', 'amazonses') === 'true') || (defined('AMAZONSES_AWSACCESSKEYID') && defined('AMAZONSES_AWSSECRETKEY')) ) {
         require_once(AMAZONSES_PATH . 'phpmailer/class.phpmailer.php');
     }
 
