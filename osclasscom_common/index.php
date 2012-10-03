@@ -63,6 +63,31 @@ Plugin update URI:
     osc_add_hook('header', 'osclass_common_generator');
     osc_remove_hook('header', 'osc_meta_generator');
 
+    function osclass_common_admin_js() {
+        $scripts = AdminThemes::newInstance()->getScripts();
+        echo '        <!-- js -->' . PHP_EOL;
+        foreach($scripts as $s) {
+            $s_path = str_replace(osc_base_url(), osc_base_path(), $s);
+            $s_date = date("YmdHis", filemtime($s_path));
+            echo '        <script type="text/javascript" src="' . $s . '?' . $s_date . '"></script>' . PHP_EOL;
+        }
+    }
+    osc_add_hook('admin_header', 'osclass_common_admin_js');
+    osc_remove_hook('admin_header', 'admin_theme_js');
+
+    function osclass_common_admin_css() {
+        $styles = AdminThemes::newInstance()->getStyles();
+        echo '        <!-- css -->' . PHP_EOL;
+        foreach($styles as $s) {
+            $s_path = str_replace(osc_base_url(), osc_base_path(), $s);
+            $s_date = date("YmdHis", filemtime($s_path));
+            echo '        <link href="' . $s . '?' . $s_date . '" rel="stylesheet" type="text/css" />' . PHP_EOL;
+        }
+        echo '        <!-- /css -->' . PHP_EOL;
+    }
+    osc_add_hook('admin_header', 'osclass_common_admin_css');
+    osc_remove_hook('admin_header', 'admin_theme_css');
+
     function osclass_common_footer() { ?>
     <div class="float-left">
         <?php printf(__('Powered by <a href="%s" target="_blank">Osclass</a>', 'osclasscom_common'), 'http://osclass.org/'); ?> -
@@ -85,10 +110,10 @@ Plugin update URI:
         return osc_plugin_url(__FILE__) . 'images/osclass-logo.gif';
     }
     osc_add_filter('login_admin_image', 'osclass_common_admin_image');
-    function osclass_common_admin_css() {
+    function osclass_common_admin_login_css() {
         echo '<link type="text/css" href="' . osc_plugin_url(__FILE__) . 'css/login.css' . '" media="screen" rel="stylesheet" />' . PHP_EOL;
     }
-    osc_add_hook('admin_login_header', 'osclass_common_admin_css');
+    osc_add_hook('admin_login_header', 'osclass_common_admin_login_css');
 
     function osclass_common_titles($title) {
         $title = preg_replace('|osclass$|i', 'Osclass.com', $title);
