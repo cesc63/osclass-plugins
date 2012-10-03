@@ -284,7 +284,7 @@ class PHPMailer {
    * @var string
    */
   public $DKIM_private    = '';
-    
+
   /**
    * Patch DKIM 18-10-2011
    * Optional DKIM passphrase.
@@ -629,7 +629,7 @@ class PHPMailer {
     if (!isset($this->amazonses_object)) {
       $this->amazonses_object = new AmazonSES();
 
-      if ($this->amazonses_debug === TRUE) 
+      if ($this->amazonses_debug === TRUE)
         { $this->amazonses_object->debug = TRUE; }
     }
   }
@@ -665,9 +665,9 @@ class PHPMailer {
              ($header, $this->Subject, $body, $destinations, $source);
 
     $isSent = ($ret[0] === "200")?1:0;
-    $this->doCallback($isSent, implode(',', $recipients), 
+    $this->doCallback($isSent, implode(',', $recipients),
                       '', '', $this->Subject, $body);
-      
+
     // Everything looks fine.
     if ($isSent === 1) {return TRUE; }
 
