@@ -91,7 +91,7 @@ Plugin update URI:
     function osclass_common_footer() { ?>
     <div class="float-left">
         <?php printf(__('Powered by <a href="%s" target="_blank">Osclass</a>', 'osclasscom_common'), 'http://osclass.com/'); ?> -
-        <a title="<?php _e('Contact', 'osclasscom_common'); ?>" href="http://osclass.com/contact"><?php _e('Contact', 'osclasscom_common'); ?></a>
+        <a title="<?php _e('Contact', 'osclasscom_common'); ?>" href="http://osclass.com/contact" target="_blank"><?php _e('Contact', 'osclasscom_common'); ?></a>
     </div>
     <div class="clear"></div>
     <?php }
