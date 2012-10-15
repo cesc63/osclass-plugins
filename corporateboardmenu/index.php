@@ -11,7 +11,7 @@ Plugin update URI:
 
     osc_add_hook('init_admin','init_admin_fn');
     function init_admin_fn() {
-        if(Params::getParam('page') == '' && Params::getParam('action') !== 'logout') {
+        if( (Params::getParam('page') !== 'login') && (Params::getParam('page') === '' && Params::getParam('action') !== 'logout') ) {
             redirect_to_url(osc_admin_render_plugin_url('jobboard/dashboard.php'));
         }
     }
