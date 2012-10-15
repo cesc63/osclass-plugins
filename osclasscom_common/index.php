@@ -97,6 +97,20 @@ Plugin update URI:
     <?php }
     osc_add_hook('admin_content_footer', 'osclass_common_footer');
 
+    function osclass_common_ga_tracking() { ?>
+<script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-17910966-6']);
+        _gaq.push(['_trackPageview']);
+            (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/u/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+</script>
+    <?php }
+    osc_add_hook('admin_footer', 'osclass_common_ga_tracking');
+
     /* admin login */
     function osclass_common_admin_url($url) {
         return 'http://osclass.com/';
