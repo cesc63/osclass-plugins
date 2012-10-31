@@ -59,7 +59,7 @@ $admin = $adminManager->findByPrimaryKey(osc_logged_admin_id());
                     <div class="form-controls">
                         <div class="form-label-checkbox">
                             <label>
-                                <input type="checkbox" <?php echo ( osc_get_preference('show_in_osclass','corporateboardmenu')!=1 ? 'checked="checked"' : '' ) ; ?> name="show_in_osclass" value="notshow" /> <?php _e('I do not want my ads to appear in OSClass.com\'s home', 'corporateboardmenu') ; ?>
+                                <input type="checkbox" <?php echo ( osc_get_preference('show_in_osclass','corporateboardmenu')==0 ? 'checked="checked"' : '' ) ; ?> name="show_in_osclass" value="notshow" /> <?php _e('I do not want my ads to appear in OSClass.com\'s home', 'corporateboardmenu') ; ?>
                             </label>
                         </div>
                     </div>
