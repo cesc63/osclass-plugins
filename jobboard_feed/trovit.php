@@ -11,9 +11,13 @@ function trovit_jobs() {
             $date = date('d/m/Y');
             $time = date('H:i');
 
-            if( preg_match('|([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2})|', date('Y-m-d H:i'), $tmp) ) {
-                $date = $tmp[3] . '/' . $tmp[2] . '/' . $tmp[1] ;
-                $time = $tmp[4] . ':' . $tmp[5] ;
+            $date = osc_item_pub_date();
+            if( strtotime(osc_item_pub_date()) < strtotime('2012-10-01 00:00') ) {
+                $date = '2012-10-01 00:00';
+            }
+            if( preg_match('|([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2})|', $date, $tmp) ) {
+                $date = $tmp[3] . '/' . $tmp[2] . '/' . $tmp[1];
+                $time = $tmp[4] . ':' . $tmp[5];
             }
 
             echo '    <ad>' . PHP_EOL;
@@ -22,6 +26,7 @@ function trovit_jobs() {
             ef_tag( 'title', osc_item_title() );
             ef_tag( 'content', osc_item_description() );
             ef_tag( 'category', osc_item_category() );
+            ef_tag( 'company', osc_page_title());
             /* location */
             if( osc_item_region() != '' ) {
                 ef_tag( 'region', osc_item_region() );
@@ -35,11 +40,6 @@ function trovit_jobs() {
             /* /location */
 
             /* jobboard attributes */
-            if( array_key_exists('s_username', $item) ) {
-                if( $item['s_username'] != '' ) {
-                    ef_tag( 'company', $item['s_username'] );
-                }
-            }
             if( array_key_exists('s_contract', $item) ) {
                 if( $item['s_contract'] != '' ) {
                     ef_tag( 'contract', $item['s_contract'] );
