@@ -53,6 +53,17 @@ $admin = $adminManager->findByPrimaryKey(osc_logged_admin_id());
                         <input type="text" class="xlarge" name="googleanalytics_trackingid" value="<?php echo osc_esc_html( osc_get_preference('googleanalytics_trackingid', 'corporateboardmenu') ); ?>" />
                     </div>
                 </div>
+                <h2 class="render-title separate-top"><?php _e('Other settings', 'corporateboardmenu') ; ?></h2>
+                <div class="form-row clear">
+                    <div class="form-label"><?php _e('Show in OSClass.com', 'corporateboardmenu') ; ?></div>
+                    <div class="form-controls">
+                        <div class="form-label-checkbox">
+                            <label>
+                                <input type="checkbox" <?php echo ( osc_get_preference('show_in_osclass','corporateboardmenu')!=1 ? 'checked="checked"' : '' ) ; ?> name="show_in_osclass" value="notshow" /> <?php _e('I do not want my ads to appear in OSClass.com\'s home', 'corporateboardmenu') ; ?>
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-actions">
                     <input type="submit" id="save_changes" value="<?php echo osc_esc_html( __('Save changes', 'corporateboardmenu') ) ; ?>" class="btn btn-submit" />
                 </div>

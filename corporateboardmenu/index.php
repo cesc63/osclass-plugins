@@ -139,6 +139,8 @@ Plugin update URI:
         $sUserName   = strip_tags($sUserName);
         $sUserName   = trim($sUserName);
 
+        osc_set_preference('show_in_osclass', Params::getParam('show_in_osclass')=='notshow'?0:1, 'corporateboardmenu');
+
         // Checks for legit data
         if( !osc_validate_email($sEmail, true) ) {
             osc_add_flash_warning_message(__("Email invalid", 'corporateboardmenu'), 'admin');
