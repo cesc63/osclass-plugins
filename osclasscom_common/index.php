@@ -128,6 +128,11 @@ Plugin update URI:
         echo '<link type="text/css" href="' . osc_plugin_url(__FILE__) . 'css/login.css' . '" media="screen" rel="stylesheet" />' . PHP_EOL;
     }
     osc_add_hook('admin_login_header', 'osclass_common_admin_login_css');
+    function osclass_common_admin_noindex() {
+        echo '        <meta name="robots" content="noindex, nofollow, noarchive" />' . PHP_EOL;
+        echo '        <meta name="googlebot" content="noindex, nofollow, noarchive" />' . PHP_EOL;
+    }
+    osc_add_hook('admin_login_header', 'osclass_common_admin_noindex');
 
     function osclass_common_titles($title) {
         $title = preg_replace('|osclass$|i', 'Osclass.com', $title);
