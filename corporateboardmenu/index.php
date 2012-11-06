@@ -56,14 +56,14 @@ Plugin update URI:
             'corporateboard',
             'moderator'
             );
-
+/*
         osc_add_admin_menu_page(
             __('Killer Questions', 'corporateboardmeun'),
             osc_admin_render_plugin_url("jobboard/manage_killer.php"),
             'killer_questions',
             'moderator'
         );
-
+*/
         osc_add_admin_menu_page(
             __('Pages', 'corporateboardmenu'),
             osc_admin_base_url(true) .'?page=pages',
