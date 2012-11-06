@@ -11,6 +11,8 @@ Plugin update URI:
 */
 
     define('OSCLASSCOM_COMMON_VERSION', '0.9');
+    define('OSCLASSCOM_COMMON_PATH', dirname(__FILE__) . '/');
+    require_once(OSCLASSCOM_COMMON_PATH . 'class/osclasscom.class.php');
 
     function osclasscom_common_favicon($favicons) {
         $fav   = array();
