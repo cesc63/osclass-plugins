@@ -3,14 +3,13 @@
 Plugin Name: Market
 Plugin URI: http://www.osclass.org/
 Description: This is for internal use only, DO NOT make public
-Version: 0.2
+Version: 1.0
 Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: market
-Plugin update URI: 
+Plugin update URI:
 */
 
-    define( 'MARKET_VERSION', 0.2) ;
     define( 'MARKET_PLUGIN_PATH', osc_plugins_path() . 'market/' ) ;
 
     require_once( MARKET_PLUGIN_PATH . '/ModelMarket.php' ) ;
@@ -23,6 +22,7 @@ Plugin update URI:
         }
         osc_set_preference('upload_path', osc_content_path().'uploads/market/', 'market', 'STRING');
         osc_set_preference('allowed_ext', 'zip', 'market', 'INTEGER');
+        osc_set_preference('market_version', '10', 'market', 'STRING');
     }
 
     function market_uninstall() {
@@ -31,25 +31,51 @@ Plugin update URI:
             ModelMarket::newInstance()->uninstall();
             osc_delete_preference('upload_path', 'market') ;
             osc_delete_preference('allowed_ext', 'market') ;
+            osc_delete_preference('market_version', 'market') ;
         } catch (Exception $e) {
             echo $e->getMessage();
         }
     }
-    
+
+    function market_update_version()
+    {
+
+        // convert version
+        $version = osc_get_preference('market_version', 'market');
+        if($version=='') {
+            $version = 0;
+        }
+        if($version < 10) {
+            // alter tables
+            // add total downloads column
+            $conn      = DBConnectionClass::newInstance();
+            $data      = $conn->getOsclassDb();
+            $dbCommand = new DBCommandClass($data);
+            $dbCommand->query(sprintf('ALTER TABLE %s ADD COLUMN i_total_downloads INT(10) NOT NULL DEFAULT \'0\' AFTER s_preview', ModelMarket::newInstance()->getTable()));
+            $dbCommand->query(sprintf('ALTER TABLE %s ADD COLUMN i_total_downloads INT(10) NOT NULL DEFAULT \'0\' AFTER b_enabled', ModelMarket::newInstance()->getTable_Files()));
+            // b_featured at t_market table
+            $dbCommand->query(sprintf('ALTER TABLE %s ADD COLUMN b_featured TINYINT(1) NOT NULL DEFAULT \'0\'  AFTER i_total_downloads', ModelMarket::newInstance()->getTable()));
+
+            osc_set_preference('market_version', '10', 'market', 'STRING');
+            osc_reset_preferences();
+        }
+    }
+    osc_add_hook('init', 'market_update_version');
+
     function market_admin_menu_plugin() {
         echo '<h3><a href="#">Market</a></h3>
-        <ul> 
+        <ul>
             <li><a href="' . osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'conf.php') . '">&raquo; ' . __('Settings', 'market') . '</a></li>
             <li><a href="'.osc_admin_configure_plugin_url("market/index.php").'">&raquo; ' . __('Configure categories', 'market') . '</a></li>
             <li><a href="' . osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php') . '">&raquo; ' . __('Stats', 'market') . '</a></li>
         </ul>' ;
     }
-    
+
     function market_redirect_to($url) {
         header('Location: ' . $url);
         exit;
     }
-    
+
     function market_is_checked($version, $versions) {
         $versions = explode(",", $versions);
         foreach($versions as $v) {
@@ -59,11 +85,11 @@ Plugin update URI:
         }
         return false;
     }
-    
+
     function market_configure_link() {
         osc_plugin_configure_view(osc_plugin_path(__FILE__) );
     }
-    
+
 
     function market_form($catId = null) {
         if($catId!="") {
@@ -80,7 +106,7 @@ Plugin update URI:
             require_once( MARKET_PLUGIN_PATH . 'item_detail.php' );
         }
     }
-    
+
     function market_load_data() {
         if(osc_is_ad_page()) {
             $market = ModelMarket::newInstance()->findByItemId(osc_item_id());
@@ -94,9 +120,9 @@ Plugin update URI:
             $market_files = ModelMarket::newInstance()->getFilesFromItem($item_id);
             $market = ModelMarket::newInstance()->findByItemId($item_id);
             $market_item = Item::newInstance()->findByPrimaryKey($item_id);
-            
+
             $secret = $market_item['s_secret'];
-            
+
             unset($market_item);
             require_once( MARKET_PLUGIN_PATH . 'item_edit.php' ) ;
         }
@@ -106,15 +132,15 @@ Plugin update URI:
      * Add/edit item
      *  add: slug, demo url
      *  edit: demo url (slug is used as identifier cannot be updated)
-     * 
+     *
      * @param type $catId
-     * @param type $item_id 
+     * @param type $item_id
      */
     function market_edit_post($catId = null, $item_id = null) {
 
         if($catId!=null) {
             if(osc_is_this_category('market', $catId)) {
-                
+
                 $market = ModelMarket::newInstance();
                 // CREATE SLUG
                 $_slug = Params::getParam('market_slug');
@@ -135,13 +161,16 @@ Plugin update URI:
                         }
                     }
                 }
+
+                // @TODO , capturar <input type='checkbox' value='1' name='b_featured'> DESTACAR </input>
+
                 
                 // NEED TO INSERT NEW FILE?
                 $market_id = $market->marketExists($item_id);
                 if($market_id==false) {
                     $market_id = $market->insertMarket($item_id, $slug, Params::getParam('market_preview'));
                 } else {
-                  $market->update(array('s_slug' => $slug, 's_preview' => Params::getParam('market_preview')), array('pk_i_id' => $market_id));  
+                  $market->update(array('s_slug' => $slug, 's_preview' => Params::getParam('market_preview')), array('pk_i_id' => $market_id));
                 }
 
                 // UPLOAD NEW BANNER
@@ -227,15 +256,15 @@ Plugin update URI:
         Session::newInstance()->_keepForm('market_banner');
         // ---------------------------------------------------------------------
         $market_slug            = Params::getParam("market_slug");
-        
+
         $aError = array();
         $error = false;
-        
+
         // at least one compatible version checked
         if( $market_slug == '' ) {
             $aError[] = __('Slug cannot be empty', 'market');
         }
-        
+
         if(count($aError) > 0) {
             $error = implode('<br/>', $aError);
             if(OC_ADMIN) {
@@ -245,17 +274,17 @@ Plugin update URI:
             } else {
                 osc_add_flash_error_message( $error, 'market');
             }
-            
+
         }
     }
-    
+
     /*
      * Add menus at dashboard user
      */
-    function market_user_menu($options) 
+    function market_user_menu($options)
     {
         $last = array_pop($options);
-        
+
         $url_market_front = osc_render_file_url(osc_plugin_folder(__FILE__) . 'list_market_front.php');
         $options[] = array('name' => __('Market listings'), 'url' => $url_market_front, 'class' => 'opt_market') ;;
         $options[] = $last;
@@ -272,21 +301,21 @@ Plugin update URI:
     osc_add_hook('before_html', 'market_load_data');
 
     osc_add_hook('pre_item_post',   'market_pre_item_post');
-    
+
     osc_add_hook('item_form', 'market_form');
     osc_add_hook('item_edit', 'market_item_edit');
-    
+
     osc_add_hook('item_edit_post', 'market_edit_post');
     osc_add_hook('item_form_post', 'market_edit_post');
 
     osc_add_hook('delete_item', 'market_delete_item');
 
     if(osc_version() < 300) {
-        
+
     } else {
         osc_add_filter('user_menu_filter', 'market_user_menu');
     }
-    
+
     if(osc_version() < 300) {
         osc_add_hook('admin_menu', 'market_admin_menu_plugin');
     } else {
@@ -297,7 +326,7 @@ Plugin update URI:
         osc_add_admin_submenu_page('plugin_market', __('Configure categories', 'market'), osc_admin_configure_plugin_url("market/index.php"), 'plugin_market_categories');
         osc_add_admin_submenu_page('plugin_market', __('Stats', 'market'), osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php'), 'plugin_market_stats');
     }
-    
+
     function market_style_admin_menu() {
     ?><style>
         #plugin_market .ico {
@@ -319,13 +348,13 @@ Plugin update URI:
     }
 
     osc_add_hook('admin_footer','market_style_admin_menu');
-    
+
     /*
      * Add action at manage listings
      */
     function market_add_actions( $options, $item )
     {
-        // si market files ... 
+        // si market files ...
         $aux = array();
         // add actions
         $aux[] = '<a href="'.osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'market_file_frm.php').'?itemId='.$item['pk_i_id'].'">'.__('Add/Edit files', 'market').'</a>';
@@ -335,25 +364,25 @@ Plugin update URI:
         }
         return $aux;
     }
-    
+
     osc_add_filter('actions_manage_items', 'market_add_actions');
     /*
      FRONT END CUSTOM PAGES - MARKET PAGES -
      List market listings - DONE
      http://localhost/osclass_git/index.php?page=custom&file=market/list_market_front.php
-     
-     List Market files - DONE 
-     http://localhost/osclass_git/index.php?page=custom&file=market/market_manage_files.php?itemId=6 
-     
+
+     List Market files - DONE
+     http://localhost/osclass_git/index.php?page=custom&file=market/market_manage_files.php?itemId=6
+
      * Add/edit market files - DONE
      http://localhost/osclass_git/index.php?page=custom&file=market/market_file_frm_front.php&itemId=6
      */
-    
+
     // ------ sumbit forms  ---------
     /*
      * Common add new MARKET FILES code
      */
-    function _market_add_file($item_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible, $status = 1) 
+    function _market_add_file($item_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible, $status = 1)
     {
         // add new file - check required params
         $market_id = ModelMarket::newInstance()->marketExists($item_id);
@@ -386,8 +415,8 @@ Plugin update URI:
         }
         // compatible versions
         $aCompatible = Params::getParam('market_new_comp_versions');
-        
-        if( !is_array($aCompatible) || count($aCompatible) == 0) { 
+
+        if( !is_array($aCompatible) || count($aCompatible) == 0) {
             $aCompatible = array();
             $error = true;
             $aError[] = __('At least one compatible version must be specified', 'market');
@@ -395,13 +424,13 @@ Plugin update URI:
             $aCompatible = array_keys($aCompatible);
         }
 
-        if(!$error) { 
+        if(!$error) {
             // UPLOAD NEW FILE
             $file = Params::getFiles('market_file_new');
             if($file_download_url != '') {
                 ModelMarket::newInstance()->insertFile($market_id, '', Params::getParam('market_download_url'), $file_version, Params::getParam('market_new_comp_versions'), $status);
             } else if (isset($file['error']) && $file['error'] == UPLOAD_ERR_OK) {
-                // upload file market 
+                // upload file market
                 $result = _market_upload_market_file( $item_id, $file , $aError, $error);
                 // insert
                 if( !$result['error'] ) {
@@ -411,7 +440,7 @@ Plugin update URI:
             }
         }
     }
-    
+
     /*
      * Common update MARKET FILES code
      */
@@ -423,16 +452,16 @@ Plugin update URI:
         $file_download_url  = Params::getParam('market_download_url');
         if($haveFile != 1) {
             if($file_download_url == '' && $file['name'] == '') {
-                
+
                 $error = true;
                 $aError[] = __('At least one download file must be specified', 'market');
             }
         }
-        
+
         // compatible versions
         $aCompatible = Params::getParam('market_new_comp_versions');
-        
-        if( !is_array($aCompatible) || count($aCompatible) == 0) { 
+
+        if( !is_array($aCompatible) || count($aCompatible) == 0) {
             $error = true;
             $aError[] = __('At least one compatible version must be specified', 'market');
         } else {
@@ -440,7 +469,7 @@ Plugin update URI:
         }
 
         if( !$error ) {
-            $result     = false; 
+            $result     = false;
             $market_id  = ModelMarket::newInstance()->marketExists($item_id);
             // UPLOAD NEW FILE
             if($file_download_url != '') {
@@ -449,15 +478,15 @@ Plugin update URI:
                     's_compatible'  => implode(",", $aCompatible),
                     's_file'        => ''
                 );
-                
+
                 $result = ModelMarket::newInstance()->updateFile($market_id, $file_id, $aSet );
-                
+
                 if($result && $haveFile) {
                     @unlink($path);
                 }
-            } else if (isset($file['error']) ) { 
+            } else if (isset($file['error']) ) {
                 if($file['error'] == UPLOAD_ERR_OK) {
-                    // upload file market 
+                    // upload file market
                     $result = _market_upload_market_file( $item_id, $file , $aError, $error);
                     // insert
                     if( !$result['error'] ) {
@@ -486,7 +515,7 @@ Plugin update URI:
             }
         }
     }
-    
+
     function _market_upload_market_file( $item_id, $file, $aError, $error ) {
         require LIB_PATH . 'osclass/mimes.php';
         $aMimesAllowed = array();
@@ -517,9 +546,9 @@ Plugin update URI:
                 $file_name = $date.'_'.$item_id.'_'.$file['name'];
                 $path = osc_get_preference('upload_path', 'market').$file_name;
                 if (move_uploaded_file($file['tmp_name'], $path)) {
-                    
+
                     return array('error' => false, 'msg' => $path);
-                    
+
                 } else {
                     $error = true;
                     $aError[] = __('Some of the files were not uploaded because they have incorrect extension', 'market');

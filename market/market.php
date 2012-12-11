@@ -5,6 +5,8 @@
     require_once( ABS_PATH . 'oc-load.php' ) ;
     //require_once('ModelMarket.php');
 
+
+
     $code = Params::getParam('code') ;
 
     if( $code != '' ) {
@@ -25,19 +27,19 @@
             echo json_encode($file) ; exit ;
         }
     } else {
-        
+
         $section = Params::getParam('section');
         $page = Params::getParam('iPage')==''?0:Params::getParam('iPage');
-        
-        
+
+
         $mUni = ModelMarket::newInstance();
-        
+
         switch($section) {
             case 'search':
                 $results = $mUni->getSearch(Params::getParam('pattern'), $page);
                 echo json_encode(array('results' => $results)); exit;
                 break;
-            
+
             case 'plugins':
                 $total   = $mUni->countData('PLUGIN');
                 $plugins = $mUni->getPlugins($page);
@@ -49,7 +51,7 @@
                 );
                 echo json_encode($array); exit;
                 break;
-            
+
             case 'themes':
                 $total   = $mUni->countData('THEME');
                 $themes  = $mUni->getThemes($page);
@@ -61,7 +63,7 @@
                     );
                 echo json_encode($array); exit;
                 break;
-            
+
             case 'languages':
                 $total     = $mUni->countData('LANGUAGE');
                 $languages = $mUni->getLanguages($page);
@@ -73,7 +75,7 @@
                     );
                 echo json_encode($array); exit;
                 break;
-            
+
             default:
                 $plugins    = $mUni->getPlugins();
                 $themes     = $mUni->getThemes();
@@ -81,21 +83,21 @@
                 $totalP     = $mUni->countData('PLUGIN');
                 $totalT     = $mUni->countData('THEME');
                 $totalL     = $mUni->countData('LANGUAGE');
-                
+
                 $array = array(
                     'plugins'       => $plugins,
-                    'pluginsTotal'  => $totalP, 
-                    'themes'        => $themes, 
-                    'themesTotal'   => $totalT, 
+                    'pluginsTotal'  => $totalP,
+                    'themes'        => $themes,
+                    'themesTotal'   => $totalT,
                     'languages'     => $languages,
-                    'languagesTotal' => $totalL 
+                    'languagesTotal' => $totalL
                     );
                 echo json_encode($array); exit;
                 break;
         }
-        
+
     }
-    
+
     echo json_encode( array('error' => 1) ) ; exit ;
-    
+
 ?>

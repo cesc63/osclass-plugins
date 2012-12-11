@@ -4,6 +4,8 @@ CREATE TABLE /*TABLE_PREFIX*/t_market (
     s_slug VARCHAR(250) NULL,
     s_banner VARCHAR(250) NULL,
     s_preview VARCHAR(250) NULL,
+    i_total_downloads int(10) DEFAULT '0',
+    b_featured tinyint(1) NOT NULL DEFAULT '0',
 
         INDEX idx_fk_i_item_id (fk_i_item_id),
         INDEX idx_s_slug (s_slug),
@@ -20,6 +22,7 @@ CREATE TABLE /*TABLE_PREFIX*/t_market_files (
     s_version VARCHAR(14) NULL,
     s_download VARCHAR(250) NULL,
     b_enabled TINYINT(1) NOT NULL DEFAULT FALSE,
+    i_total_downloads int(10) DEFAULT '0',
 
         INDEX idx_fk_i_market_id (fk_i_market_id),
         PRIMARY KEY (pk_i_id),
