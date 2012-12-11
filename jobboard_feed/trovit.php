@@ -26,7 +26,11 @@ function trovit_jobs() {
             ef_tag( 'title', osc_item_title() );
             ef_tag( 'content', osc_item_description() );
             ef_tag( 'category', osc_item_category() );
-            ef_tag( 'company', osc_page_title());
+            $company = osc_page_title();
+            if( function_exists('trovit_get_user_company_name') ) {
+                $company = trovit_get_user_company_name();
+            }
+            ef_tag( 'company', $company);
             /* location */
             if( osc_item_region() != '' ) {
                 ef_tag( 'region', osc_item_region() );
@@ -82,4 +86,4 @@ function trovit_jobs() {
     echo '</trovit>' ;
 }
 
-// file end
+// End of file
