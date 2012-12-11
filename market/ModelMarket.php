@@ -21,7 +21,7 @@
 
     /**
      * Model database for Market tables
-     * 
+     *
      * @package OSClass
      * @subpackage Model
      * @since unknown
@@ -30,7 +30,7 @@
         /**
          * It references to self object: ModelMarket
          * It is used as a singleton
-         * 
+         *
          * @access private
          * @since unknown
          * @var Currency
@@ -41,7 +41,7 @@
         /**
          * It creates a new ModelMarket object class ir if it has been created
          * before, it return the previous object
-         * 
+         *
          * @access public
          * @since unknown
          * @return Currency
@@ -62,7 +62,7 @@
             $this->setPrimaryKey('pk_i_id') ;
             $this->setFields( array('pk_i_id', 'fk_i_item_id', 's_slug', 's_banner', 's_preview') ) ;
         }
-        
+
         /**
          * Return table name market
          * @return string
@@ -70,7 +70,7 @@
         public function getTable() {
             return DB_TABLE_PREFIX.'t_market';
         }
-        
+
         /**
          * Return table name market files
          * @return string
@@ -78,7 +78,7 @@
         public function getTable_Files() {
             return DB_TABLE_PREFIX.'t_market_files';
         }
-        
+
         /**
          * Return table name market stats
          * @return string
@@ -86,17 +86,17 @@
         public function getTable_Stats() {
             return DB_TABLE_PREFIX.'t_market_stats';
         }
-        
+
         /**
          * Return pageSize
          */
         public function pageSize() {
             return $this->pageSize;
         }
-        
+
         /**
          * Import sql file
-         * @param type $file 
+         * @param type $file
          */
         public function import($file) {
             $path = osc_plugin_resource($file) ;
@@ -106,7 +106,7 @@
                 throw new Exception( $this->dao->getErrorLevel().' - '.$this->dao->getErrorDesc() ) ;
             }
         }
-        
+
         /**
          * Remove data and tables related to the plugin.
          */
@@ -116,7 +116,7 @@
             $this->dao->query(sprintf('DROP TABLE %s', $this->getTable()) ) ;
             $this->dao->delete(sprintf("%st_plugin_category", DB_TABLE_PREFIX), "s_plugin_name = 'market'");
         }
-        
+
         public function findByItemId($item_id) {
             $this->dao->select();
             $this->dao->from($this->getTable());
@@ -129,7 +129,7 @@
                 return array();
             }
         }
-        
+
         /**
          * Get last file from an item
          */
@@ -146,8 +146,8 @@
             } else {
                 return array();
             }
-        } 
-        
+        }
+
         /**
          * Get files from an item
          */
@@ -163,8 +163,8 @@
             } else {
                 return array();
             }
-        } 
-        
+        }
+
         public function getItemIdBySlug($slug) {
             $this->dao->select('fk_i_item_id');
             $this->dao->from($this->getTable());
@@ -178,13 +178,13 @@
                 return array();
             }
         }
-        
+
         /**
          * Get file by slug
          *
          */
         public function getFileBySlug($slug, $version = '', $enabled = false) {
-            
+
             $this->dao->select(
                     " m.s_slug as s_update_url"
                     .", m.s_banner as s_banner"
@@ -214,7 +214,7 @@
             }
             $this->dao->orderBy('f.pk_i_id', 'DESC');
             $this->dao->limit(1);
-            
+
             $result = $this->dao->get() ;
             if($result!==false) {
                 $file = $result->row();
@@ -222,7 +222,7 @@
                     $aCategoryPlugins       = explode(',', osc_get_preference('market_categories_plugins','market'));
                     $aCategoryThemes        = explode(',', osc_get_preference('market_categories_theme','market'));
                     $aCategoryLanguages     = explode(',', osc_get_preference('market_categories_languages','market'));
-                    
+
                     if( in_array($file['fk_i_category_id'], $aCategoryThemes) ) {
                         $file['e_type'] = 'THEME';
                     } else if( in_array($file['fk_i_category_id'], $aCategoryLanguages) ) {
@@ -249,38 +249,38 @@
             } else {
                 return array();
             }
-        } 
-        
+        }
+
         /*
          * Find market file given an file id
          */
         public function marketFileByPrimaryKey($fileId)
         {
             $result = array();
-        
+
             if(isset($fileId) && is_numeric($fileId) ) {
                 $this->dao->select();
                 $this->dao->from( $this->getTable_Files());
                 $this->dao->where('pk_i_id', $fileId);
-                
+
                 $result = $this->dao->get() ;
                 if($result!==false) {
                     return $result->row();
                 }
                 return array();
             }
-            return $result; 
+            return $result;
         }
-        
+
         /**
          * Get file by slug
-         * 
+         *
          * used on download.php
          * used on market.php
-         * 
+         *
          */
         public function getFileForDownloadBySlug($slug, $version = '') {
-            
+
             $this->dao->select(
                     " f.fk_i_market_id as fk_i_market_id"
                     .", f.pk_i_id as pk_i_id"
@@ -302,8 +302,8 @@
             } else {
                 return array();
             }
-        } 
-        
+        }
+
         /**
          * Check if the file already exists in the market
          */
@@ -323,7 +323,7 @@
                 return false;
             }
         }
-        
+
         /**
          * Insert new market
          */
@@ -331,7 +331,7 @@
             $this->insert(array('fk_i_item_id' => $item_id, 's_slug' => $slug, 's_preview' => $preview));
             return $this->dao->insertedId();
         }
-        
+
         /**
          * Insert new file
          */
@@ -351,7 +351,7 @@
                 'b_enabled' => $enabled
             ));
         }
-       
+
         /**
          * Update a file
          */
@@ -362,9 +362,9 @@
             } else {
                 return true;
             }
-                
+
         }
-        
+
         /**
          * Delete a file
          */
@@ -372,7 +372,7 @@
             if(!is_numeric($id) || !is_numeric($item)) {
                 return false;
             }
-            
+
             $this->dao->select();
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
@@ -389,31 +389,31 @@
             if($secret!=$item['s_secret']) {
                 return false;
             }
-            
+
             $this->dao->delete($this->getTable_Stats(), 'fk_i_file_id = '.$id);
             return $this->dao->delete($this->getTable_Files(), 'pk_i_id = '.$id);
         }
-        
+
         /**
          * Remove market banner from db and from HD
-         * 
+         *
          * @param type $item_id
-         * @param type $secret 
+         * @param type $secret
          */
         public function removeBannerFile( $item_id, $secret )
-        {            
+        {
             $this->dao->select();
             $this->dao->from($this->getTable()." m");
             $this->dao->where('m.fk_i_item_id', $item_id);
             $result = $this->dao->get() ;
-            
+
             if($result!==false && $result->numRows()==0) {
                 return false;
             }
             $market = $result->row();
-            
+
             $item = Item::newInstance()->findByPrimaryKey($item_id);
-            
+
             if($secret!=$item['s_secret']) {
                 return false;
             }
@@ -422,10 +422,10 @@
             $this->dao->update( $this->getTable(), array('s_banner' => NULL) );
             if( unlink($banner_path) ) {
                 return true;
-            } 
+            }
             return false;
         }
-        
+
         /*
          * Check if slug exists or not
          */
@@ -441,7 +441,7 @@
                 return true;
             }
         }
-        
+
         /*
          * Insert new stat about a download
          */
@@ -454,8 +454,45 @@
                 'dt_date' => date('Y-m-d H:i:s'),
                 's_osclass_version' => $osclass_version
             ));
+
+            // insert market stat ++
+            $this->increaseMarketDownload($market_id);
+            // insert market file stat ++
+            $this->increaseMarketFileDownload($file_id);
         }
-        
+
+        /**
+         * Increment Market item downloads
+         *
+         * @param type $marketId
+         * @return type
+         */
+        public function increaseMarketDownload($id)
+        {
+            if(!is_numeric($id)) {
+                return false;
+            }
+
+            $sql = sprintf('UPDATE %s SET i_total_downloads = i_total_downloads + 1 WHERE pk_i_id = %d', $this->getTable(), $id);
+            return $this->dao->query($sql);
+        }
+
+        /**
+         * Increment Market-file downloads
+         *
+         * @param type $fileId
+         * @return type
+         */
+        public function increaseMarketFileDownload($id)
+        {
+            if(!is_numeric($id)) {
+                return false;
+            }
+
+            $sql = sprintf('UPDATE %s SET i_total_downloads = i_total_downloads + 1 WHERE pk_i_id = %d', $this->getTable_Files(), $id);
+            return $this->dao->query($sql);
+        }
+
         /*
          * Get latest files added
          */
@@ -463,7 +500,7 @@
             $this->page = 20;
             return $this->getData('LATEST', $page);
         }
-        
+
         /*
          * Disable a file
          */
@@ -473,7 +510,7 @@
             }
             return false;
         }
-       
+
         /*
          * Enable a file
          */
@@ -483,10 +520,10 @@
             }
             return false;
         }
-       
+
         /*
          * Delete a file
-         * 
+         *
          * DELETE ? TODO
          */
         public function delete($uid) {
@@ -498,28 +535,31 @@
         /**
          *
          * @param type $id ITEM ID
-         * @return type 
+         * @return type
          */
         public function deleteMarket($id) {
             return $this->dao->delete($this->getTable(), 'fk_i_item_id = '.$id);
         }
-        
-        public function deleteMarket_file() {
+
+        public function deleteMarket_file($id) {
             return $this->dao->delete($this->getTable_Files(), 'pk_i_id = '.$id);
         }
-        
-        public function deleteMarket_stat() {
+
+        public function deleteMarket_stat($id) {
             return $this->dao->delete($this->getTable_Stats(), 'fk_i_file_id = '.$id);
         }
-        
+
         /*
          * Get downloads
+         *
+         * @todo improve getting data form table_view
          */
         public function getDownloads($uid) {
+
             $this->dao->select('COUNT(*) as total');
             $this->dao->from($this->getTable_Stats());
             $this->dao->where('fk_i_market_id', $uid);
-            $this->dao->groupBy('fk_i_market_is');
+            $this->dao->groupBy('fk_i_market_id');
             $result = $this->dao->get() ;
             if($result!==false) {
                 $row = $result->result();
@@ -527,13 +567,13 @@
             } else {
                 return 0;
             }
-        }       
-        
+        }
+
         /*
          * Get download stats, 10 month, 10 week, 10 day
          * $type = all , plugins, themes, languages
          */
-        public function getAllStats($from_date, $date = 'day', $type = 'all', $item_id = '') 
+        public function getAllStats($from_date, $date = 'day', $type = 'all', $item_id = '')
         {
             if($item_id != '') { $type='all'; }
             if($date=='week') {
@@ -546,10 +586,10 @@
                 $this->dao->select('DATE(dt_date) as d_date, COUNT(*) as num') ;
                 $this->dao->groupBy('DAY(dt_date)') ;
             }
-            
+
             $this->dao->join(DB_TABLE_PREFIX.'t_market', DB_TABLE_PREFIX.'t_market.pk_i_id = '.DB_TABLE_PREFIX.'t_market_stats.fk_i_market_id');
             $this->dao->join(DB_TABLE_PREFIX.'t_item', DB_TABLE_PREFIX.'t_item.pk_i_id = '.DB_TABLE_PREFIX.'t_market.fk_i_item_id');
-            
+
             $aCategory = null;
             if($type == 'all') {
                 // nothing todo
@@ -557,7 +597,7 @@
                     $this->dao->where(DB_TABLE_PREFIX.'t_item.pk_i_id = '.$item_id);
                 }
             } else if($type == 'plugins') {
-                // get plugin categories .... 
+                // get plugin categories ....
                 $aCategory    = osc_get_preference('market_categories_plugins','market');
             } else if($type == 'themes') {
                 // get themes categories ...
@@ -566,38 +606,38 @@
                 // get languages categories ...
                 $aCategory    = osc_get_preference('market_categories_languages','market');
             }
-            
+
             if($aCategory != null) {
                 $this->dao->where(DB_TABLE_PREFIX.'t_item.fk_i_category_id IN ('.$aCategory.') ');
             }
-            
+
             $this->dao->from(DB_TABLE_PREFIX."t_market_stats") ;
             $this->dao->where("dt_date > '$from_date'") ;
             $this->dao->orderBy('dt_date', 'DESC') ;
-            
+
             $result = $this->dao->get() ;
             return $result->result() ;
-        } 
-        
+        }
+
         /*
          * Get download stats, 10 month, 10 week, 10 day
          * $type = all , plugins, themes, languages
          * $from_date -> datetime
-         * 
+         *
          */
-        public function getTop($from_date, $type = 'all', $limit = 10) 
+        public function getTop($from_date, $type = 'all', $limit = 10)
         {
             $this->dao->select('count(1) as total, '.DB_TABLE_PREFIX.'t_market_stats.fk_i_market_id as pk_i_id, '.DB_TABLE_PREFIX.'t_item.fk_i_category_id') ;
-            $this->dao->groupBy(DB_TABLE_PREFIX.'t_market_stats.fk_i_market_id') ;   
-            
+            $this->dao->groupBy(DB_TABLE_PREFIX.'t_market_stats.fk_i_market_id') ;
+
             $this->dao->join(DB_TABLE_PREFIX.'t_market', DB_TABLE_PREFIX.'t_market.pk_i_id = '.DB_TABLE_PREFIX.'t_market_stats.fk_i_market_id');
             $this->dao->join(DB_TABLE_PREFIX.'t_item', DB_TABLE_PREFIX.'t_item.pk_i_id = '.DB_TABLE_PREFIX.'t_market.fk_i_item_id');
-            
+
             $aCategory = null;
             if($type == 'all') {
                 // nothing todo
             } else if($type == 'plugins') {
-                // get plugin categories .... 
+                // get plugin categories ....
                 $aCategory    = osc_get_preference('market_categories_plugins','market');
             } else if($type == 'themes') {
                 // get themes categories ...
@@ -606,48 +646,48 @@
                 // get languages categories ...
                 $aCategory    = osc_get_preference('market_categories_languages','market');
             }
-            
+
             if($aCategory != null) {
                 $this->dao->where(DB_TABLE_PREFIX.'t_item.fk_i_category_id IN ('.$aCategory.') ');
             }
-            
+
             $this->dao->from(DB_TABLE_PREFIX."t_market_stats") ;
             $this->dao->where("dt_date > '$from_date'") ;
             $this->dao->orderBy('total', 'DESC') ;
             $this->dao->limit(0, $limit);
-            
+
             $result = $this->dao->get() ;
             return Item::newInstance()->extendData( $result->result() );
-        } 
-        
+        }
+
         /*
          * Get plugins
          */
         public function getPlugins($page = 0) {
             return $this->getData('PLUGIN', $page);
         }
-        
+
         /*
          * Get themes
          */
         public function getThemes($page = 0) {
             return $this->getData('THEME', $page);
         }
-        
+
         /*
          * Get languages
          */
         public function getLanguages($page = 0) {
             return $this->getData('LANGUAGE', $page);
         }
-        
+
         /*
          * Get search results
          */
         public function getSearch($pattern = '', $page = 0, $type = '') {
             return array();
         }
-        
+
         /**
          * Manage Market table, show info market given a page and $start - $limit
          * NOTE: $page [1,2,3,...,N]
@@ -655,9 +695,9 @@
          * @param type $page
          * @param type $limit
          * @param type $aInfo
-         * @return string 
+         * @return string
          */
-        public function manageMarket($page, $limit, $aInfo = null) 
+        public function manageMarket($page, $limit, $aInfo = null)
         {
             $type = '';
             if($page>0) {
@@ -690,11 +730,11 @@
             }
             $this->dao->orderBy('m.pk_i_id', 'DESC');
             $this->dao->limit($start, $limit);
-            
+
             $result = $this->dao->get() ;
-            
+
             if($result!==false) {
-                
+
                 $data = $result->result();
                 // get total rows
                 $result_count = $this->dao->query("SELECT FOUND_ROWS() as total");
@@ -712,19 +752,19 @@
                         $data[$k]['s_thumbnail'] = '';
                     }
                 }
-                
+
                 // prepare for pass to view
                 $newData['iTotalRecords']        = count($data);
                 $newData['iTotalDisplayRecords'] = $total ;
                 $newData['iDisplayLength']       = $limit;
                 $newData['aaData']               = $data;
-                
+
                 return $newData;
             } else {
                 return array();
             }
         }
-        
+
         /*
          * General purpouse function
          */
@@ -739,7 +779,7 @@
                 $type = '';
                 $catId = null;
             }
-            
+
             $start = $page*$this->pageSize;
             $this->dao->select(
                     "f.pk_i_id as pk_i_id"
@@ -757,6 +797,7 @@
                     .", m.fk_i_item_id as fk_i_item_id"
                     .", d.s_title as s_title"
                     .", d.s_description as s_description"
+                    .", m.i_total_downloads as i_total_downloads"
                     );
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
@@ -770,17 +811,17 @@
             $this->dao->orderBy('f.pk_i_id', 'DESC');
             $subquery = $this->dao->_getSelect() ;
             $this->dao->_resetSelect() ;
-            
-            
+
+
             $this->dao->select();
             $this->dao->from($this->getTable_Files());
             $this->dao->join(sprintf( '(%s) as aux', $subquery ), "aux.pk_i_id = ".DB_TABLE_PREFIX."t_market_files.pk_i_id ", "RIGHT");
             $this->dao->orderBy(DB_TABLE_PREFIX.'t_market_files.pk_i_id', 'DESC') ;
             $this->dao->groupBy($this->getTable_Files().".fk_i_market_id");
             $this->dao->limit($start, $this->pageSize);
-            
+
             $result = $this->dao->get() ;
-            
+
             if($result!==false) {
                 $data = $result->result();
 
@@ -803,16 +844,16 @@
                 return array();
             }
         }
-        
+
         /**
          * Get random items given a type market file
          *
          * @param type $exclude_item_id
          * @param string $type
          * @param type $num
-         * @return type 
+         * @return type
          */
-        public function getRandom($exclude_item_id = null, $type = 'LATEST', $num = 3) 
+        public function getRandom($exclude_item_id = null, $type = 'LATEST', $num = 3)
         {
             if($type=='THEME') {
                 $catId = osc_get_preference('market_categories_theme','market'); // $catId = 96;
@@ -824,7 +865,7 @@
                 $type = '';
                 $catId = null;
             }
-            
+
             $this->dao->select(
                     "DISTINCT i.pk_i_id as pk_i_id"
                     .", m.s_slug as s_update_url"
@@ -861,8 +902,8 @@
             if($result===false) {
                 return array();
             }
-            
-            return $result->result();    
+
+            return $result->result();
         }
         /*
          * General purpouse function
@@ -876,11 +917,11 @@
             } else {
                 $catId = osc_get_preference('market_categories_plugins','market'); // $catId = 97;
             }
-            
+
             if($catId == '') {
                 return array();
             }
-            
+
             // get languages categories ...
             $this->dao->select('m.pk_i_id');
             $this->dao->from($this->getTable()." m");
@@ -890,7 +931,7 @@
             // in category
             $this->dao->where('i.fk_i_category_id IN ('.$catId.')');
             $this->dao->groupBy("m.pk_i_id");
-            
+
             $result = $this->dao->get() ;
 
             if($result!==false) {
