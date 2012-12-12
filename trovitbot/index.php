@@ -9,8 +9,8 @@ Author URI: http://osclass.org/
 Short Name: trovitbot
 */
 
-osc_add_hook('before_search', 'trovitbot_email');
-function trovitbot_email() {
+osc_add_hook('feed_trovit', 'trovitbot_email');
+function trovitbot_email($items) {
     if( !isset($_SERVER['HTTP_USER_AGENT']) ) {
         return false;
     }
@@ -18,18 +18,18 @@ function trovitbot_email() {
     $UserAgent = trim($_SERVER['HTTP_USER_AGENT']);
 
     if( preg_match('|trovitBot|', $UserAgent) ) {
-        sendmail_trovitbot();
+        $num_items = count($items);
+        sendmail_trovitbot($num_items);
     }
 
     return ;
 }
 
-function sendmail_trovitbot() {
+function sendmail_trovitbot($num_items) {
     $params = array();
     $params['to']      = 'listings.notifications@osclass.org';
     $params['subject'] = 'Trovitbot acaba de visitar listings.trovit.com';
-    $params['body']    = 'El bot de Trovit acaba de descargarse el feed de trovit a las ' . date('Y-m-d H:i:s');
+    $params['body']    = sprintf('El bot de Trovit acaba de descargarse el feed de trovit a las %1$s que contiene <strong>%2$d anuncios</strong>', date('Y-m-d H:i:s'), $num_items);
     osc_sendMail($params);
 }
-
 // End of file: ./trovitbot/index.php
