@@ -26,9 +26,7 @@ function trovitbot_email() {
 
 function sendmail_trovitbot() {
     $params = array();
-    $params['to'][]    = 'oscar@osclass.org';
-    $params['to'][]    = 'juanramon@osclass.org';
-    $params['to'][]    = 'mauricio@trovit.com';
+    $params['to']      = 'listings.notifications@osclass.org';
     $params['subject'] = 'Trovitbot acaba de visitar listings.trovit.com';
     $params['body']    = 'El bot de Trovit acaba de descargarse el feed de trovit a las ' . date('Y-m-d H:i:s');
     osc_sendMail($params);
