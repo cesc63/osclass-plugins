@@ -770,11 +770,11 @@
          */
         public function getData($type = 'LATEST', $page = 0) {
             if($type=='THEME') {
-                $catId = osc_get_preference('market_categories_theme','market'); // $catId = 96;
+                $catId = osc_get_preference('market_categories_theme','market');
             } else if($type=='LANGUAGE') {
-                $catId = osc_get_preference('market_categories_languages','market'); // $catId = 98;
+                $catId = osc_get_preference('market_categories_languages','market');
             } else if($type=='PLUGIN') {
-                $catId = osc_get_preference('market_categories_plugins','market'); // $catId = 97;
+                $catId = osc_get_preference('market_categories_plugins','market');
             } else {
                 $type = '';
                 $catId = null;
@@ -798,6 +798,7 @@
                     .", d.s_title as s_title"
                     .", d.s_description as s_description"
                     .", m.i_total_downloads as i_total_downloads"
+                    .", m.b_featured as b_featured"
                     );
             $this->dao->from($this->getTable()." m");
             $this->dao->join($this->getTable_Files()." f ", "f.fk_i_market_id = m.pk_i_id", "LEFT");
