@@ -60,7 +60,7 @@
             parent::__construct();
             $this->setTableName('t_market') ;
             $this->setPrimaryKey('pk_i_id') ;
-            $this->setFields( array('pk_i_id', 'fk_i_item_id', 's_slug', 's_banner', 's_preview') ) ;
+            $this->setFields( array('pk_i_id', 'fk_i_item_id', 's_slug', 's_banner', 's_preview', 'i_total_downloads', 'b_featured') ) ;
         }
 
         /**
@@ -327,8 +327,8 @@
         /**
          * Insert new market
          */
-        public function insertMarket($item_id, $slug, $preview = '') {
-            $this->insert(array('fk_i_item_id' => $item_id, 's_slug' => $slug, 's_preview' => $preview));
+        public function insertMarket($item_id, $slug, $featured, $preview = '') {
+            $this->dao->insert($this->getTable(),array('fk_i_item_id' => $item_id, 's_slug' => $slug, 'b_featured' => $featured, 's_preview' => $preview));
             return $this->dao->insertedId();
         }
 

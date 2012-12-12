@@ -1,6 +1,6 @@
 <?php $market_versions = explode(",", osc_get_preference('compatible_versions', 'market')); ?>
 
-<?php 
+<?php
     $item = __get('item');
     if(@$item_id) {
         $market = ModelMarket::newInstance()->findByItemId( $item_id );
@@ -28,7 +28,7 @@
         vertical-align: top;
     }
 </style>
-<h2><?php _e('Market attributes'); ?></h2>
+<h2><?php _e('Market attributes', 'market'); ?></h2>
 <?php if(!OC_ADMIN) { ?>
 <div style="margin-top:10px;margin-bottom:10px;">
     <span style="font-style: italic;"><b><?php _e('NOTE', 'market'); ?>:</b> <?php _e('Once you have inserted the listing, through your my account you can add new market files','market');?></span>
@@ -37,7 +37,7 @@
 <div class="grid-row grid-100">
     <h3><?php _e('Information', 'market'); ?></h3>
     <div>
-        <?php if(osc_is_admin_user_logged_in()) { ?> 
+        <?php if(osc_is_admin_user_logged_in()) { ?>
         <label><?php _e('Slug','market'); ?> <?php if(@$item_id) { ?><b>( <?php _e('Slug cannot be updated is used as ID','market'); ?>) </b><?php } ?></label>
         <div>
             <?php if(@$item_id) { ?>
@@ -57,6 +57,14 @@
         <?php }; ?>
     </div>
     <div style="clear: both;"></div>
+    <div>
+        <label>
+            <?php error_log(print_r(@$market, true)); ?>
+            <input type='checkbox' value='1' <?php if(@$market['b_featured']==1) { ?>checked="checked"<?php } ?> name='market_featured' />
+            <?php _e('Mark as featured','market'); ?>
+        </label>
+    </div>
+    <div style="clear: both;"></div>
     <div id="market_banner">
         <label><?php _e('Upload a banner', 'market') ; ?></label>
         <div style="padding: 10px;background-color: #F3F3F3;border: solid 1px #DDD;border-radius: 4px;-webkit-border-radius: 4px;">
@@ -73,13 +81,13 @@
             </div>
         <?php }; ?>
     </div>
-    
+
     <br/>
-    
+
     <div class="clear"></div>
-    
+
 <script type="text/javascript">
-    
+
     function delete_market_banner(item_id, secret) {
         var result = confirm('<?php echo __('This action can\\\'t be undone. Are you sure you want to continue?', 'market'); ?>');
         if(result) {
@@ -91,7 +99,7 @@
                     if(data.error==0) {
                         $('#banner').remove();
                     }
-                    
+
                     $(".jsMessage > p").html(data.msg);
                     $(".jsMessage").slideDown('slow').delay(3000).slideUp('slow');
                     scrollTo(0,0);

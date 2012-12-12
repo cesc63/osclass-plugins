@@ -136,8 +136,8 @@ Plugin update URI:
      * @param type $catId
      * @param type $item_id
      */
-    function market_edit_post($catId = null, $item_id = null) {
-
+    function market_edit_post($catId = null, $item_id = null)
+    {
         if($catId!=null) {
             if(osc_is_this_category('market', $catId)) {
 
@@ -163,14 +163,20 @@ Plugin update URI:
                 }
 
                 // @TODO , capturar <input type='checkbox' value='1' name='b_featured'> DESTACAR </input>
+                $featured = Params::getParam('market_featured');
+                if($featured!='') {
+                    $featured = 1;
+                } else {
+                    $featured = 0;
+                }
 
-                
+
                 // NEED TO INSERT NEW FILE?
                 $market_id = $market->marketExists($item_id);
                 if($market_id==false) {
-                    $market_id = $market->insertMarket($item_id, $slug, Params::getParam('market_preview'));
+                    $market_id = $market->insertMarket($item_id, $slug, $featured, Params::getParam('market_preview'));
                 } else {
-                  $market->update(array('s_slug' => $slug, 's_preview' => Params::getParam('market_preview')), array('pk_i_id' => $market_id));
+                  $market->update(array('s_slug' => $slug, 'b_featured' => (int)$featured, 's_preview' => Params::getParam('market_preview')), array('pk_i_id' => $market_id));
                 }
 
                 // UPLOAD NEW BANNER
@@ -250,10 +256,12 @@ Plugin update URI:
         Session::newInstance()->_setForm('market_preview', Params::getParam("market_preview") );
         Session::newInstance()->_setForm('market_slug'   , Params::getParam("market_slug") );
         Session::newInstance()->_setForm('market_banner' , Params::getParam("market_banner") );
+        Session::newInstance()->_setForm('market_featured' , Params::getParam("market_featured") );
         // keep form
         Session::newInstance()->_keepForm('market_preview');
         Session::newInstance()->_keepForm('market_slug');
         Session::newInstance()->_keepForm('market_banner');
+        Session::newInstance()->_keepForm('market_featured');
         // ---------------------------------------------------------------------
         $market_slug            = Params::getParam("market_slug");
 
