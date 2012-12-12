@@ -59,7 +59,6 @@
     <div style="clear: both;"></div>
     <div>
         <label>
-            <?php error_log(print_r(@$market, true)); ?>
             <input type='checkbox' value='1' <?php if(@$market['b_featured']==1) { ?>checked="checked"<?php } ?> name='market_featured' />
             <?php _e('Mark as featured','market'); ?>
         </label>

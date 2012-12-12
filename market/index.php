@@ -56,6 +56,25 @@ Plugin update URI:
             // b_featured at t_market table
             $dbCommand->query(sprintf('ALTER TABLE %s ADD COLUMN b_featured TINYINT(1) NOT NULL DEFAULT \'0\'  AFTER i_total_downloads', ModelMarket::newInstance()->getTable()));
 
+            // fill i_total_download [t_market]
+            $result = $dbCommand->query(sprintf('SELECT fk_i_market_id, count(1) as i_downloads FROM %s GROUP BY fk_i_market_id', ModelMarket::newInstance()->getTable_Stats()));
+            if($result->numRows > 0) {
+                foreach($result->result() as $aux) {
+                    $market_id      = $aux['fk_i_market_id'];
+                    $i_downloads    = $aux['i_downloads'];
+                    ModelMarket::newInstance()->update(array('i_total_downloads' => $i_downloads), array('pk_i_id' => $market_id) );
+                }
+            }
+            // fill i_total_download [t_market_files]
+            $result = $dbCommand->query(sprintf('SELECT fk_i_market_id, fk_i_file_id, count(1) as i_downloads FROM %s GROUP BY fk_i_file_id', ModelMarket::newInstance()->getTable_Stats()));
+            if($result->numRows > 0) {
+                foreach($result->result() as $aux) {
+                    $market_id      = $aux['fk_i_market_id'];
+                    $market_file_id = $aux['fk_i_file_id'];
+                    $i_downloads    = $aux['i_downloads'];
+                    ModelMarket::newInstance()->updateFile($market_id, $market_file_id, array('i_total_downloads' => $i_downloads) );
+                }
+            }
             osc_set_preference('market_version', '10', 'market', 'STRING');
             osc_reset_preferences();
         }
@@ -390,7 +409,7 @@ Plugin update URI:
     /*
      * Common add new MARKET FILES code
      */
-    function _market_add_file($item_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible, $status = 1)
+    function _market_add_file($item_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible, $status = 1)
     {
         // add new file - check required params
         $market_id = ModelMarket::newInstance()->marketExists($item_id);
@@ -437,6 +456,8 @@ Plugin update URI:
             $file = Params::getFiles('market_file_new');
             if($file_download_url != '') {
                 ModelMarket::newInstance()->insertFile($market_id, '', Params::getParam('market_download_url'), $file_version, Params::getParam('market_new_comp_versions'), $status);
+                // no errors, update item dt_mod_date
+                Item::newInstance()->update(array('dt_mod_date' => date('Y-m-d H:i:s'), array('pk_i_id' => $market_id)));
             } else if (isset($file['error']) && $file['error'] == UPLOAD_ERR_OK) {
                 // upload file market
                 $result = _market_upload_market_file( $item_id, $file , $aError, $error);
@@ -444,6 +465,8 @@ Plugin update URI:
                 if( !$result['error'] ) {
                     $path = $result['msg'];
                     ModelMarket::newInstance()->insertFile($market_id, $path, '', $file_version, Params::getParam('market_new_comp_versions'),$status);
+                    // no errors, update item dt_mod_date
+                    Item::newInstance()->update(array('dt_mod_date' => date('Y-m-d H:i:s'), array('pk_i_id' => $market_id)));
                 }
             }
         }
@@ -452,7 +475,7 @@ Plugin update URI:
     /*
      * Common update MARKET FILES code
      */
-    function _market_update_file($item_id, $file_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible, $path)
+    function _market_update_file($item_id, $file_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible, $path)
     {
         // download url OR download file
         $haveFile           = Params::getParam('market_file_exist');
@@ -520,6 +543,9 @@ Plugin update URI:
             if(!$result) {
                 $error = true;
                 $aError[] = __('There are problems updating file market', 'market');
+            } else {
+                // no errors, update item dt_mod_date
+                Item::newInstance()->update(array('dt_mod_date' => date('Y-m-d H:i:s'), array('pk_i_id' => $market_id)));
             }
         }
     }
