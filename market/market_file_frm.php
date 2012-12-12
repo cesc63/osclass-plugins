@@ -1,9 +1,9 @@
-<?php 
+<?php
 $item_id    = Params::getParam('itemId');
 $file_id    = Params::getParam('fileId');
 $aCompatible        = array();
 if(!isset($item_id) || !is_numeric($item_id)) {
-    // show error, you miss item id 
+    // show error, you miss item id
 } else {
     // everything ok ...
     $isEdit     = false;
@@ -15,15 +15,15 @@ if(!isset($item_id) || !is_numeric($item_id)) {
     $aCompatible        = array();
     $file_version       = '';
     $file_download_url  = '';
-    
+
     $title      = __('Add new market file', 'market');
     $submit_txt = __('Add new file', 'market');
-    
+
     //  submited form INSERT
     if(Params::getParam('plugin_action')=='done') {
         // insert new market file
-        market_admin_add_file($item_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible);
-        if($error) { 
+        market_admin_add_file($item_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible);
+        if($error) {
             $str_error = implode('<br/>', $aError);
 
         } else {
@@ -38,8 +38,8 @@ if(!isset($item_id) || !is_numeric($item_id)) {
         $isEdit = true;
         $file_info  = ModelMarket::newInstance()->marketFileByPrimaryKey( $file_id );
         // update file market
-        market_admin_update_file($item_id, $file_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible, $file_info['s_file']);
-        if($error) { 
+        market_admin_update_file($item_id, $file_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible, $file_info['s_file']);
+        if($error) {
             $str_error = implode('<br/>', $aError);
         } else {
             $success     = true;
@@ -50,8 +50,8 @@ if(!isset($item_id) || !is_numeric($item_id)) {
             $file_download_url  = '';
         }
     }
-    
-    $market_files = ModelMarket::newInstance()->getFilesFromItem($item_id); // existent market files  ONLY ADMIN 
+
+    $market_files = ModelMarket::newInstance()->getFilesFromItem($item_id); // existent market files  ONLY ADMIN
     $market_versions = explode(",", osc_get_preference('compatible_versions', 'market'));
     $item_info  = Item::newInstance()->findByPrimaryKey( $item_id );
     $secret = $item_info['s_secret'];
@@ -71,7 +71,7 @@ if(!isset($item_id) || !is_numeric($item_id)) {
         $title = __('Add new market file', 'market');
         $submit_txt = __('Add new file', 'market');
     }
-    
+
 ?>
     <style>
         label {
@@ -81,7 +81,7 @@ if(!isset($item_id) || !is_numeric($item_id)) {
             margin-top: 10px;
             margin-bottom: 5px;
         }
-        
+
         .input {
             display: inline-block;
             width: 208px;
@@ -101,10 +101,10 @@ if(!isset($item_id) || !is_numeric($item_id)) {
             vertical-align: top;
         }
     </style>
-    
+
     <h3><?php echo $title; ?></h3>
     <h4><?php echo $item_info['locale'][osc_admin_language()]['s_title'];?></h4>
-    
+
     <form style="width: 830px;" id="market_form" action="<?php echo osc_admin_base_url(true); ?>" method="POST" enctype="multipart/form-data" >
         <input type="hidden" name="page" value="plugins" />
         <input type="hidden" name="action" value="renderplugin" />
@@ -113,7 +113,7 @@ if(!isset($item_id) || !is_numeric($item_id)) {
         <input type="hidden" name="plugin_action" value="<?php if($isEdit) { echo "edit"; } else { echo "done"; } ?>"/>
         <table>
             <tr>
-                <td valign="top"> 
+                <td valign="top">
                     <div id="market_files">
                         <div>
                             <label><?php _e('File version', 'market'); ?></label>
@@ -129,11 +129,11 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                             <label><?php _e('Compatible with', 'market'); ?></label>
                             <div>
                                 <?php foreach($market_versions as $v) { ?>
-                                <?php 
+                                <?php
                                 $checked = false;
                                 if(array_search($v, $aCompatible) !== false) {
                                     $checked = true;
-                                } 
+                                }
                                 ?>
                                 <label style="display:inline;padding-right:8px;"><input <?php if($checked) { echo "checked";} ?> type="checkbox" name="market_new_comp_versions[<?php echo $v; ?>]" value="1" /> <?php echo $v; ?></label>
                                 <?php }; ?>
@@ -175,8 +175,8 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                         <li><a href="#<?php echo str_replace(array('.'), '', $_r['s_version']); ?>"><?php echo $_r['s_version']; ?></a></li>
                         <?php } ?>
                     </ul>
-                    <?php 
-                    foreach($market_files as $_r) { 
+                    <?php
+                    foreach($market_files as $_r) {
                         $slug_file = str_replace(array('.'), '', $_r['s_version']);  ?>
                     <div id="<?php echo $slug_file;?>" style="padding: 10px;background-color: #F3F3F3;border: solid 1px #DDD;border-radius: 4px;-webkit-border-radius: 4px;">
                         <div style="">
@@ -209,7 +209,7 @@ if(!isset($item_id) || !is_numeric($item_id)) {
 
                             <div class="clear"></div>
 
-                            <div> 
+                            <div>
                                 <label><?php _e('Compatible versions:', 'market');?></label>
                                 <div>
                                 <?php foreach(explode(',',$_r['s_compatible']) as $v) { ?>
@@ -237,15 +237,15 @@ if(!isset($item_id) || !is_numeric($item_id)) {
             <td valign="top"  width="330"><div class="well" style="margin-left:30px;"><?php _e('Slug', 'market'); ?><br/><b><?php echo $market['s_slug']; ?></b><br /><?php _e('Preview', 'market'); ?><br/><b><?php echo $market['s_preview']; ?></b></div></td>
             </tr>
         </table>
-        
+
         <div class="form-actions">
             <a href="javascript:history.go(-1)" class="btn"><?php _e('Cancel', 'market')?></a>
             <input type="submit" value="<?php echo $submit_txt;?>" class="btn btn-submit">
         </div>
     </form>
-    
+
     <script type="text/javascript">
-        
+
         <?php if($error) { ?>
         $(".jsMessage > p").html('<?php echo $str_error;?>');
         $(".jsMessage").removeClass('flashmessage-info');
@@ -260,14 +260,14 @@ if(!isset($item_id) || !is_numeric($item_id)) {
         $(".jsMessage").addClass('flashmessage-ok');
         $(".jsMessage").slideDown('slow');//.delay(3000).slideUp('slow');
         scrollTo(0,0);
-        
+
         setTimeout(function() {
             window.location = "<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'list_market.php'); ?>";
         },1250);
-        
+
         <?php } ?>
-        
-        
+
+
         $(function() {
             $( "#tabs_files" ).tabs();
             $( "#tabs_upload" ).tabs();
@@ -293,7 +293,7 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                         if(data.error==0) {
                             $('#tabs_files').tabs( "remove" , slug );
                         }
-                        
+
                         $(".jsMessage > p").html(data.msg);
                         $(".jsMessage").removeClass('flashmessage-info');
                         $(".jsMessage").removeClass('flashmessage-error');
@@ -304,17 +304,17 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                 });
             }
         }
-        
+
         function disable(file_id) {
             var url = "<?php echo osc_base_url(true); ?>?page=ajax&action=custom&ajaxfile=<?php echo osc_plugin_folder(__FILE__) . 'ajax.php';?>&paction=disable&fileId="+file_id;
             changeStatus( file_id, url );
         }
-        
+
         function enable(file_id) {
             var url = "<?php echo osc_base_url(true); ?>?page=ajax&action=custom&ajaxfile=<?php echo osc_plugin_folder(__FILE__) . 'ajax.php';?>&paction=enable&fileId="+file_id;
             changeStatus( file_id, url );
         }
-        
+
         function changeStatus(file_id, url) {
             $.ajax({
                 type: "POST",
@@ -331,10 +331,10 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                         $(".jsMessage").removeClass('flashmessage-ok');
                         $(".jsMessage").addClass('flashmessage-error');
                     }
-                    
+
                     $(".jsMessage").slideDown('slow');//.delay(3000).slideUp('slow');
                     scrollTo(0,0);
-                    
+
                     setTimeout(function() {
                         window.location = "<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'market_file_frm.php');?>?itemId=<?php echo $item_id;?>";
                     },1250);
@@ -343,10 +343,10 @@ if(!isset($item_id) || !is_numeric($item_id)) {
         }
         $(".flashmessage .ico-close").click(function(){$(this).parent().hide();});
     </script>
-    
+
 <?php } ?>
-    
-<?php 
+
+<?php
 /*
  *  functions
  */
@@ -354,16 +354,17 @@ if(!isset($item_id) || !is_numeric($item_id)) {
 /*
  * Insert market file
  */
-function market_admin_add_file($item_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible) 
+function market_admin_add_file($item_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible)
 {
-    _market_add_file($item_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible, 1);
+    _market_add_file($item_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible, 1);
+//    _market_add_file($item_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible, 1);
 }
 
 /*
  * Update market file
  */
-function market_admin_update_file($item_id, $file_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible, $path)
+function market_admin_update_file($item_id, $file_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible, $path)
 {
-    _market_update_file($item_id, $file_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible, $path);
+    _market_update_file($item_id, $file_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible, $path);
 }
 ?>
