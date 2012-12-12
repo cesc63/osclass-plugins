@@ -17,7 +17,7 @@
             $slug    = $code ;
             $version = '' ;
         }
-        
+
         // only show enabled files.
         $file = ModelMarket::newInstance()->getFileBySlug($slug, $version, true);
         if( !empty($file) ) {
@@ -72,6 +72,19 @@
                     'total'     => $total,
                     'page'      => $page,
                     'sizePage'  => $mUni->pageSize()
+                    );
+                echo json_encode($array); exit;
+                break;
+
+            case 'count':
+                $totalP     = $mUni->countData('PLUGIN');
+                $totalT     = $mUni->countData('THEME');
+                $totalL     = $mUni->countData('LANGUAGE');
+
+                $array = array(
+                    'pluginsTotal'   => $totalP,
+                    'themesTotal'    => $totalT,
+                    'languagesTotal' => $totalL
                     );
                 echo json_encode($array); exit;
                 break;
