@@ -39,7 +39,6 @@ Plugin update URI:
 
     function market_update_version()
     {
-
         // convert version
         $version = osc_get_preference('market_version', 'market');
         if($version=='') {
@@ -457,7 +456,10 @@ Plugin update URI:
             if($file_download_url != '') {
                 ModelMarket::newInstance()->insertFile($market_id, '', Params::getParam('market_download_url'), $file_version, Params::getParam('market_new_comp_versions'), $status);
                 // no errors, update item dt_mod_date
-                Item::newInstance()->update(array('dt_mod_date' => date('Y-m-d H:i:s'), array('pk_i_id' => $market_id)));
+                Item::newInstance()->update(
+                        array('dt_mod_date' => date('Y-m-d H:i:s') ),
+                        array('pk_i_id' => $market_id)
+                        );
             } else if (isset($file['error']) && $file['error'] == UPLOAD_ERR_OK) {
                 // upload file market
                 $result = _market_upload_market_file( $item_id, $file , $aError, $error);
@@ -466,7 +468,10 @@ Plugin update URI:
                     $path = $result['msg'];
                     ModelMarket::newInstance()->insertFile($market_id, $path, '', $file_version, Params::getParam('market_new_comp_versions'),$status);
                     // no errors, update item dt_mod_date
-                    Item::newInstance()->update(array('dt_mod_date' => date('Y-m-d H:i:s'), array('pk_i_id' => $market_id)));
+                    Item::newInstance()->update(
+                        array('dt_mod_date' => date('Y-m-d H:i:s') ),
+                        array('pk_i_id' => $market_id)
+                        );
                 }
             }
         }
@@ -545,7 +550,10 @@ Plugin update URI:
                 $aError[] = __('There are problems updating file market', 'market');
             } else {
                 // no errors, update item dt_mod_date
-                Item::newInstance()->update(array('dt_mod_date' => date('Y-m-d H:i:s'), array('pk_i_id' => $market_id)));
+                Item::newInstance()->update(
+                        array('dt_mod_date' => date('Y-m-d H:i:s') ),
+                        array('pk_i_id' => $market_id)
+                        );
             }
         }
     }
