@@ -88,7 +88,32 @@
                     );
                 echo json_encode($array); exit;
                 break;
-
+            case 'featured':
+                // RewriteRule ^api/featured/(.*)/num/(.*)/?$ oc-content/plugins/market/market.php?section=featured&type=$1&num=$2
+                // api/section/featured/{plugin/theme/language}/(num/{num})?/
+                $aValidSection  = array('plugins', 'themes', 'languages');
+                $max_num        = 12;
+                $num            = Params::getParam('num');
+                if($num=='') {
+                    $num = 6;
+                }
+                $type = Params::getParam('type');
+                switch($type) {
+                    case 'plugins':
+                        $array = $mUni->getFeatured('PLUGIN', $num);
+                    break;
+                    case 'themes':
+                        $array = $mUni->getFeatured('THEME', $num);
+                    break;
+                    case 'languages':
+                        $array = $mUni->getFeatured('LANGUAGE', $num);
+                    break;
+                    default:
+                        $array = array('error' => 1);
+                    break;
+                }
+                echo json_encode($array); exit;
+                break;
             default:
                 $plugins    = $mUni->getPlugins();
                 $themes     = $mUni->getThemes();
