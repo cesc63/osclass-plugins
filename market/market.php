@@ -100,13 +100,13 @@
                 $type = Params::getParam('type');
                 switch($type) {
                     case 'plugins':
-                        $array = $mUni->getFeatured('PLUGIN', $num);
+                        $array = array('plugins' => $mUni->getFeatured('PLUGIN', $num) );
                     break;
                     case 'themes':
-                        $array = $mUni->getFeatured('THEME', $num);
+                        $array = array('themes' => $mUni->getFeatured('THEME', $num) );
                     break;
                     case 'languages':
-                        $array = $mUni->getFeatured('LANGUAGE', $num);
+                        $array = array('languages' => $mUni->getFeatured('LANGUAGE', $num) );
                     break;
                     default:
                         $array = array('error' => 1);
