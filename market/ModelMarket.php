@@ -231,14 +231,8 @@
                         $file['e_type'] = 'PLUGIN';
                     }
 
-                    $res = ItemResource::newInstance()->getResource($file['fk_i_item_id']);
-                    if($res) {
-                        $file['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
-                        $file['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
-                    } else {
-                        $file['s_image'] = '';
-                        $file['s_thumbnail'] = '';
-                    }
+                    $this->extendWithImages( $file['fk_i_item_id'], $file );
+
                     unset($file['fk_i_category_id']);
                     unset($file['fk_i_item_id']);
 
@@ -251,6 +245,50 @@
             }
         }
 
+        private function extendWithImages($itemId, &$file )
+        {
+            // @todo improve removing call to getResource, it's the same getting
+            // the first resource of the call getResources
+            $res = ItemResource::newInstance()->getResource( $itemId );
+            if($res) {
+                if( osc_keep_original_image() ) {
+                    $file['s_original'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_original.".$res['s_extension'];
+                } else {
+                    $file['s_original'] = '';
+                }
+                $file['s_image']     = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
+                $file['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
+            } else {
+                $file['s_original']  = '';
+                $file['s_image']     = '';
+                $file['s_thumbnail'] = '';
+            }
+            // fill $data[$k]['a_images'] with itemResources, until 6 resources
+            $aResources = ItemResource::newInstance()->getResources($itemId, 0, 6);
+            foreach($aResources as $_res) {
+                if( osc_keep_original_image() ) {
+                    $aux['s_original'] = osc_base_url().$_res['s_path'].$_res['pk_i_id']."_original.".$_res['s_extension'];
+                } else {
+                    $aux['s_original'] = '';
+                }
+                $aux['s_image']     = osc_base_url().$_res['s_path'].$_res['pk_i_id'].".".$_res['s_extension'];
+                $aux['s_thumbnail'] = osc_base_url().$_res['s_path'].$_res['pk_i_id']."_thumbnail.".$_res['s_extension'];
+                $file['a_images'][] = $aux;
+            }
+        }
+
+        private function getCategoriesByType($type = null)
+        {
+            $catId = array();
+            if($type=='THEME') {
+                $catId = osc_get_preference('market_categories_theme','market');
+            } else if($type=='LANGUAGE') {
+                $catId = osc_get_preference('market_categories_languages','market');
+            } else if($type=='PLUGIN') {
+                $catId = osc_get_preference('market_categories_plugins','market');
+            }
+            return $catId;
+        }
         /*
          * Find market file given an file id
          */
@@ -743,14 +781,7 @@
 
                 foreach($data as $k => $v) {
                     $data[$k]['e_type'] = $type;
-                    $res = ItemResource::newInstance()->getResource($v['fk_i_item_id']);
-                    if($res) {
-                        $data[$k]['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
-                        $data[$k]['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
-                    } else {
-                        $data[$k]['s_image'] = '';
-                        $data[$k]['s_thumbnail'] = '';
-                    }
+                    $this->extendWithImages( $v['fk_i_item_id'], $data[$k]);
                 }
 
                 // prepare for pass to view
@@ -773,16 +804,7 @@
          */
         public function getFeatured($type, $num)
         {
-
-            if($type=='THEME') {
-                $catId = osc_get_preference('market_categories_theme','market');
-            } else if($type=='LANGUAGE') {
-                $catId = osc_get_preference('market_categories_languages','market');
-            } else if($type=='PLUGIN') {
-                $catId = osc_get_preference('market_categories_plugins','market');
-            } else {
-                return array();
-            }
+            $catId = $this->getCategoriesByType($type);
 
             $this->dao->select(
                     "f.pk_i_id as pk_i_id"
@@ -821,7 +843,6 @@
             $this->dao->select();
             $this->dao->from($this->getTable_Files());
             $this->dao->join(sprintf( '(%s) as aux', $subquery ), "aux.pk_i_id = ".DB_TABLE_PREFIX."t_market_files.pk_i_id ", "RIGHT");
-//            $this->dao->orderBy(DB_TABLE_PREFIX.'t_market_files.pk_i_id', 'DESC') ;
             $this->dao->groupBy($this->getTable_Files().".fk_i_market_id");
             $this->dao->limit(0, $num);
 
@@ -832,21 +853,12 @@
 
                 foreach($data as $k => $v) {
                     $data[$k]['e_type'] = $type;
-                    $res = ItemResource::newInstance()->getResource($v['fk_i_item_id']);
-                    if($res) {
-                        $data[$k]['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
-                        $data[$k]['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
-                    } else {
-                        $data[$k]['s_image'] = '';
-                        $data[$k]['s_thumbnail'] = '';
-                    }
-                    // fill $data[$k]['a_images'] with itemResources, until 6 resources
-                    $aResources = ItemResource::newInstance()->getResources($v['fk_i_item_id'], 0, 6);
-                    foreach($aResources as $_res) {
-                        $aux['s_image'] = osc_base_url().$_res['s_path'].$_res['pk_i_id'].".".$_res['s_extension'];
-                        $aux['s_thumbnail'] = osc_base_url().$_res['s_path'].$_res['pk_i_id']."_thumbnail.".$_res['s_extension'];
-                        $data[$k]['a_images'][] = $aux;
-                    }
+                    // clean description
+                    $aux_description = $data[$k]['s_description'];
+                    $data[$k]['s_description'] = nl2br($aux_descrition);
+
+                    $this->extendWithImages($v['fk_i_item_id'], $data[$k]);
+
                     unset($data[$k]['fk_i_item_id']);
                     unset($data[$k]['fk_i_category_id']);
                     unset($data[$k]['pk_i_id']);
@@ -862,15 +874,11 @@
          * General purpouse function
          */
         public function getData($type = 'LATEST', $page = 0 ) {
-            if($type=='THEME') {
-                $catId = osc_get_preference('market_categories_theme','market');
-            } else if($type=='LANGUAGE') {
-                $catId = osc_get_preference('market_categories_languages','market');
-            } else if($type=='PLUGIN') {
-                $catId = osc_get_preference('market_categories_plugins','market');
-            } else {
-                $type = '';
-                $catId = null;
+
+            $catId = $this->getCategoriesByType($type);
+            if( $catId == array() ) {
+                $type   = '';
+                $catId  = null;
             }
 
             $start = $page*$this->pageSize;
@@ -901,7 +909,7 @@
             if($catId!=null) {
                 $this->dao->where('i.fk_i_category_id IN ('. $catId .')' );
             }
-            //$this->dao->groupBy('m.s_slug');
+
             $this->dao->orderBy('f.pk_i_id', 'DESC');
             $subquery = $this->dao->_getSelect() ;
             $this->dao->_resetSelect() ;
@@ -921,21 +929,12 @@
 
                 foreach($data as $k => $v) {
                     $data[$k]['e_type'] = $type;
-                    $res = ItemResource::newInstance()->getResource($v['fk_i_item_id']);
-                    if($res) {
-                        $data[$k]['s_image'] = osc_base_url().$res['s_path'].$res['pk_i_id'].".".$res['s_extension'];
-                        $data[$k]['s_thumbnail'] = osc_base_url().$res['s_path'].$res['pk_i_id']."_thumbnail.".$res['s_extension'];
-                    } else {
-                        $data[$k]['s_image'] = '';
-                        $data[$k]['s_thumbnail'] = '';
-                    }
-                    // fill $data[$k]['a_images'] with itemResources, until 6 resources
-                    $aResources = ItemResource::newInstance()->getResources($v['fk_i_item_id'], 0, 6);
-                    foreach($aResources as $_res) {
-                        $aux['s_image'] = osc_base_url().$_res['s_path'].$_res['pk_i_id'].".".$_res['s_extension'];
-                        $aux['s_thumbnail'] = osc_base_url().$_res['s_path'].$_res['pk_i_id']."_thumbnail.".$_res['s_extension'];
-                        $data[$k]['a_images'][] = $aux;
-                    }
+                    // clean description
+                    $aux_description = $data[$k]['s_description'];
+                    $data[$k]['s_description'] = nl2br($aux_descrition);
+
+                    $this->extendWithImages($v['fk_i_item_id'], $data[$k]);
+
                     unset($data[$k]['fk_i_item_id']);
                     unset($data[$k]['fk_i_category_id']);
                     unset($data[$k]['pk_i_id']);
@@ -956,15 +955,10 @@
          */
         public function getRandom($exclude_item_id = null, $type = 'LATEST', $num = 3)
         {
-            if($type=='THEME') {
-                $catId = osc_get_preference('market_categories_theme','market'); // $catId = 96;
-            } else if($type=='LANGUAGE') {
-                $catId = osc_get_preference('market_categories_languages','market'); // $catId = 98;
-            } else if($type=='PLUGIN') {
-                $catId = osc_get_preference('market_categories_plugins','market'); // $catId = 97;
-            } else {
-                $type = '';
-                $catId = null;
+            $catId = $this->getCategoriesByType($type);
+            if( $catId == array() ) {
+                $type   = '';
+                $catId  = null;
             }
 
             $this->dao->select(
@@ -1009,17 +1003,10 @@
         /*
          * General purpouse function
          */
-        public function countData($type = 'PLUGIN') {
-
-            if($type=='THEME') {
-                $catId = osc_get_preference('market_categories_theme','market'); // $catId = 96;
-            } else if($type=='LANGUAGE') {
-                $catId = osc_get_preference('market_categories_languages','market'); // $catId = 98;
-            } else {
-                $catId = osc_get_preference('market_categories_plugins','market'); // $catId = 97;
-            }
-
-            if($catId == '') {
+        public function countData($type = 'PLUGIN')
+        {
+            $catId = $this->getCategoriesByType($type);
+            if( $catId == array() ) {
                 return array();
             }
 
