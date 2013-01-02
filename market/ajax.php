@@ -2,6 +2,8 @@
     switch(Params::getParam('paction')) {
         case 'download':
             $code = Params::getParam('code') ;
+            $from = Params::getParam('website') ;
+
             $json = array('msg' => '', 'error' => 1);
             if( $code != '' ) {
                 if( preg_match('|(.+)@([A-Za-z0-9\.-]+)$|', $code, $m) ) {
@@ -13,9 +15,18 @@
                 }
 
                 $file = ModelMarket::newInstance()->getFileForDownloadBySlug($slug, $version) ;
+
                 if( !empty($file) ) {
-                    ModelMarket::newInstance()->insertStat($file['fk_i_market_id'], $file['pk_i_id'], isset($_SERVER['REMOTE_HOST'])?$_SERVER['REMOTE_HOST']:'', isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'', '') ;
-                    $json = array('msg' => '<iframe src="'.$file['s_download'].'" width="0" heigtht="0" style="width: 0px; height: 0px; display: none;"></iframe>', 'error' => 0);
+                    error_log('DESCARGA SOLO DESDE LA WEB ? market.osclass.org? ');
+                    if($file['s_download']!='') {
+                        ModelMarket::newInstance()->insertStat($file['fk_i_market_id'], $file['pk_i_id'], isset($_SERVER['REMOTE_HOST'])?$_SERVER['REMOTE_HOST']:'', isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'', '') ;
+                        $json = array('msg' => '<iframe src="'.$file['s_download'].'?website'.$from.'" width="0" heigtht="0" style="width: 0px; height: 0px; display: none;"></iframe>', 'error' => 0);
+                    } else if($file['s_source_file']!='') {
+                        ModelMarket::newInstance()->insertStat($file['fk_i_market_id'], $file['pk_i_id'], isset($_SERVER['REMOTE_HOST'])?$_SERVER['REMOTE_HOST']:'', isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'', '') ;
+                        $json = array('msg' => '<iframe src="'.$file['s_download'].'?website'.$from.'" width="0" heigtht="0" style="width: 0px; height: 0px; display: none;"></iframe>', 'error' => 0);
+                    }
+
+
                 }
             }
             echo json_encode($json);
@@ -31,7 +42,7 @@
                 $item   = Item::newInstance()->findByPrimaryKey( $market['fk_i_item_id'] );
                 if( $user_id == $item['fk_i_user_id'] || osc_logged_admin_id() > 0 ) {
                     $success = ModelMarket::newInstance()->enable( $fileId );
-                    if($success) {   
+                    if($success) {
                         echo json_encode(array('msg' => __('File correctly enabled', 'market'), 'error' => 0));
                     } else {
                         echo json_encode(array('msg' => __('File could not be enabled', 'market'), 'error' => 1));
@@ -50,7 +61,7 @@
                 $item   = Item::newInstance()->findByPrimaryKey( $market['fk_i_item_id'] );
                 if( $user_id == $item['fk_i_user_id'] || osc_logged_admin_id() > 0 ) {
                     $success = ModelMarket::newInstance()->disable( $fileId );
-                    if($success) {   
+                    if($success) {
                         echo json_encode(array('msg' => __('File correctly disabled', 'market'), 'error' => 0));
                     } else {
                         echo json_encode(array('msg' => __('File could not be disabled', 'market'), 'error' => 1));
@@ -74,10 +85,10 @@
             break;
         case 'files':
         default:
-            
-            $page = Params::getParam('page')==''?0:Params::getParam('page'); 
+
+            $page = Params::getParam('page')==''?0:Params::getParam('page');
             $files = ModelMarket::newInstance()->getLatest($page);
-            
+
             $sOutput = '{';
             $sOutput .= '"iTotalRecords": '.(count($files)).', ';
             $sOutput .= '"iTotalDisplayRecords": '.(count($files)).', ';
@@ -85,12 +96,12 @@
             $sOutput .= '"aaData": [ ';
             if(count($files)>0) {
                 foreach ($files as $file) {
-                    
+
                     $tmp = explode("/", $file['s_file']);
                     $filename = end($tmp);
-                    
+
                     $downloads = ModelMarket::newInstance()->getDownloads($file['pk_i_id']);
-                    
+
                     $sOutput .= "[";
                     $sOutput .= "\"<input type='checkbox' name='id[]' value='".$file['pk_i_id']."' />\",";
                     $sOutput .= "\"".$file['s_slug']."\",";
@@ -115,7 +126,7 @@
             }
             $sOutput .= ']}';
             echo $sOutput;
-            
+
             break;
     }
 ?>

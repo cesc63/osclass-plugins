@@ -483,7 +483,7 @@
         /*
          * Insert new stat about a download
          */
-        public function insertStat($market_id, $file_id, $remote_host, $remote_addr, $osclass_version) {
+        public function insertStat($market_id, $file_id, $remote_host, $remote_addr, $osclass_version, $website = '') {
             $this->dao->insert($this->getTable_Stats(), array(
                 'fk_i_market_id' => $market_id,
                 'fk_i_file_id' => $file_id,
@@ -494,9 +494,9 @@
             ));
 
             // insert market stat ++
-            $this->increaseMarketDownload($market_id);
+            $this->increaseMarketDownload($market_id, $website);
             // insert market file stat ++
-            $this->increaseMarketFileDownload($file_id);
+            $this->increaseMarketFileDownload($file_id, $website);
         }
 
         /**
@@ -505,7 +505,7 @@
          * @param type $marketId
          * @return type
          */
-        public function increaseMarketDownload($id)
+        public function increaseMarketDownload($id, $website)
         {
             if(!is_numeric($id)) {
                 return false;
@@ -834,8 +834,9 @@
             if($catId!=null) {
                 $this->dao->where('i.fk_i_category_id IN ('. $catId .')' );
             }
-            // order by pub data, mod date
-            $this->dao->orderBy('i.dt_pub_date, i.dt_mod_date ', 'DESC');
+            // ?? order by pub data, mod date
+//            $this->dao->orderBy('i.dt_pub_date, i.dt_mod_date', 'DESC');
+            $this->dao->orderBy('f.pk_i_id', 'DESC');
             $subquery = $this->dao->_getSelect() ;
             $this->dao->_resetSelect() ;
 
@@ -844,6 +845,7 @@
             $this->dao->from($this->getTable_Files());
             $this->dao->join(sprintf( '(%s) as aux', $subquery ), "aux.pk_i_id = ".DB_TABLE_PREFIX."t_market_files.pk_i_id ", "RIGHT");
             $this->dao->groupBy($this->getTable_Files().".fk_i_market_id");
+            $this->dao->orderBy(DB_TABLE_PREFIX.'t_market_files.pk_i_id', 'DESC');
             $this->dao->limit(0, $num);
 
             $result = $this->dao->get() ;
@@ -855,7 +857,7 @@
                     $data[$k]['e_type'] = $type;
                     // clean description
                     $aux_description = $data[$k]['s_description'];
-                    $data[$k]['s_description'] = nl2br($aux_descrition);
+                    $data[$k]['s_description'] = nl2br($aux_description);
 
                     $this->extendWithImages($v['fk_i_item_id'], $data[$k]);
 
@@ -931,7 +933,7 @@
                     $data[$k]['e_type'] = $type;
                     // clean description
                     $aux_description = $data[$k]['s_description'];
-                    $data[$k]['s_description'] = nl2br($aux_descrition);
+                    $data[$k]['s_description'] = ($aux_description);
 
                     $this->extendWithImages($v['fk_i_item_id'], $data[$k]);
 
@@ -992,7 +994,7 @@
             $this->dao->groupBy('pk_i_id');
             $this->dao->orderBy('RAND()');
             $this->dao->limit( 0, $num);
-            error_log( $this->dao->_getSelect());
+
             $result = $this->dao->get() ;
             if($result===false) {
                 return array();
