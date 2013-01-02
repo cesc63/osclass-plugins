@@ -80,6 +80,17 @@ Plugin update URI:
     }
     osc_add_hook('init', 'market_update_version');
 
+    function market_redirect_dashboard()
+    {
+        $page    = Params::getParam('page');
+        $action  = Params::getParam('action');
+        if($page=='' && $action=='') {
+            header("Location : ". osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'dashboard.php'));
+            die;
+        }
+    }
+    osc_add_hook('init_admin', 'market_redirect_dashboard');
+
     function market_admin_menu_plugin() {
         echo '<h3><a href="#">Market</a></h3>
         <ul>
