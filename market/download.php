@@ -7,17 +7,6 @@
     $code = Params::getParam('code') ;
 
     if( $code != '' ) {
-        $from = Params::getParam('website');
-        if($from=='ocadmin') {
-            // downloaded for install at oc-admin
-            error_log('from MARKET.OSCLASS.ORG Downloaded/Install');
-        } else if($from=='ocadmin_manualy') {
-            // from oc-admin
-            error_log('from Manual download - OC.ADMIN');
-        } else {
-            error_log('direct download');
-        }
-
 
         if( preg_match('|(.+)@([A-Za-z0-9\.-]+)$|', $code, $m) ) {
             $slug    = $m[1] ;
@@ -29,14 +18,24 @@
 
         $file = ModelMarket::newInstance()->getFileForDownloadBySlug($slug, $version) ;
         if( !empty($file) ) {
-
             $osclass_version = '';
             if(isset($_SERVER['HTTP_USER_AGENT'])) {
-                if(preg_match("|OSClass \(v\.([0-9]+)\)|", $_SERVER['HTTP_USER_AGENT']. ' OSClass (v.' . osc_version() . ')', $match)) {
+                error_log($_SERVER['HTTP_USER_AGENT']);
+                if(preg_match("|Osclass \(v\.([0-9]+)\)|", $_SERVER['HTTP_USER_AGENT'], $match)) {
+                    //
+                    // @TODO incrementar contador de descargas desde oc-admin market pages!
+                    //
                     $osclass_version = $match[1];
+                    error_log('-> FROM oc-admin [' . $osclass_version . ']');
+                } else {
+                    error_log('FROM direct download');
                 }
             }
+
+            // save market download stats
             ModelMarket::newInstance()->insertStat($file['fk_i_market_id'], $file['pk_i_id'], isset($_SERVER['REMOTE_HOST'])?$_SERVER['REMOTE_HOST']:'', isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'', $osclass_version) ;
+
+            error_log("market::plugin send file to download " . $file['s_source_file']);
 
             if($file['s_source_file']!='') {
                 error_log("market download s_source:file ... ". $file['s_source_file']);
