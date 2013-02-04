@@ -5,8 +5,6 @@
     require_once( ABS_PATH . 'oc-load.php' ) ;
     //require_once('ModelMarket.php');
 
-
-
     $code = Params::getParam('code') ;
 
     if( $code != '' ) {
@@ -21,18 +19,33 @@
         // only show enabled files.
         $file = ModelMarket::newInstance()->getFileBySlug($slug, $version, true);
         if( !empty($file) ) {
-            unset($file['s_file']) ;
-            $file['s_source_file'] = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $code ;
+            if($file['s_download']=='') {
+                $file['s_source_file'] = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $code ;
+            }
             $file['error'] = 0;
             echo json_encode($file) ; exit ;
         }
+
     } else {
+
+        $mUni = ModelMarket::newInstance();
 
         $section = Params::getParam('section');
         $page = Params::getParam('iPage')==''?0:Params::getParam('iPage');
+        // page Size / page Length
+        $pageSize = Params::getParam('pageLength')==''?$mUni->pageSize():Params::getParam('pageLength');
 
+        // sort result
+        $sort = null;
+        if(Params::getParam('sort')!='') {
+            $sort = Params::getParam('sort');
+        }
+        $order = null;
+        if(Params::getParam('order')!='') {
+            $order = Params::getParam('order');
+        }
+        error_log($section." ,,,,,...----> " . $sort . " _ " . $order);
 
-        $mUni = ModelMarket::newInstance();
 
         switch($section) {
             case 'search':
@@ -42,36 +55,39 @@
 
             case 'plugins':
                 $total   = $mUni->countData('PLUGIN');
-                $plugins = $mUni->getPlugins($page);
+
+                error_log('plugins ... ');
+
+                $plugins = $mUni->getPlugins($page, $pageSize, $sort, $order);
                 $array = array(
                     'plugins'   => $plugins,
                     'total'     => $total,
                     'page'      => $page,
-                    'sizePage'  => $mUni->pageSize()
+                    'sizePage'  => $pageSize
                 );
                 echo json_encode($array); exit;
                 break;
 
             case 'themes':
                 $total   = $mUni->countData('THEME');
-                $themes  = $mUni->getThemes($page);
+                $themes  = $mUni->getThemes($page, $pageSize, $sort, $order);
                 $array = array(
                     'themes'    => $themes,
                     'total'     => $total,
                     'page'      => $page,
-                    'sizePage'  => $mUni->pageSize()
+                    'sizePage'  => $pageSize
                     );
                 echo json_encode($array); exit;
                 break;
 
             case 'languages':
                 $total     = $mUni->countData('LANGUAGE');
-                $languages = $mUni->getLanguages($page);
+                $languages = $mUni->getLanguages($page, $pageSize, $sort, $order);
                 $array = array(
                     'languages' => $languages,
                     'total'     => $total,
                     'page'      => $page,
-                    'sizePage'  => $mUni->pageSize()
+                    'sizePage'  => $pageSize
                     );
                 echo json_encode($array); exit;
                 break;
