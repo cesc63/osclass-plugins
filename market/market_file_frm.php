@@ -105,7 +105,7 @@ if(!isset($item_id) || !is_numeric($item_id)) {
     <h3><?php echo $title; ?></h3>
     <h4><?php echo $item_info['locale'][osc_admin_language()]['s_title'];?></h4>
 
-    <form style="width: 830px;" id="market_form" action="<?php echo osc_admin_base_url(true); ?>" method="POST" enctype="multipart/form-data" >
+    <form style="width: 860px;" id="market_form" action="<?php echo osc_admin_base_url(true); ?>" method="POST" enctype="multipart/form-data" >
         <input type="hidden" name="page" value="plugins" />
         <input type="hidden" name="action" value="renderplugin" />
         <input type="hidden" name="file" value="<?php echo osc_plugin_folder(__FILE__); ?>market_file_frm.php" />
@@ -145,8 +145,13 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                         </div>
                         <div id="tabs_upload">
                             <ul>
+                                <?php if(isset($file_download_file) && !empty($file_download_file) && file_exists($file_download_file) ) { ?>
                                 <li><a href="#market-url"><?php _e('Download URL', 'market'); ?></a></li>
+                                <li class="ui-tabs-selected ui-state-active"><a href="#market-file"><?php _e('Download file', 'market'); ?></a></li>
+                                <?php } else { ?>
+                                <li class="ui-tabs-selected ui-state-active"><a href="#market-url"><?php _e('Download URL', 'market'); ?></a></li>
                                 <li><a href="#market-file"><?php _e('Download file', 'market'); ?></a></li>
+                                <?php } ?>
                             </ul>
                             <div id="market-url" class="row-wrapper">
                                 <label><?php _e('Download URL','market'); ?></label>
