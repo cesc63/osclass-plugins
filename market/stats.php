@@ -51,21 +51,22 @@ if( Params::getParam('type_stat') == 'week' ) {
 
 
 
-// all -> plugin top 10 , themes top 10 
+// all -> plugin top 10 , themes top 10
 if( $type == 'all' ) {
-    $aTopPlugins = ModelMarket::newInstance()->getTop($from_date, 'plugins');
-    $aTopThemes  = ModelMarket::newInstance()->getTop($from_date, 'themes');
-    
+    $aTopPlugins   = ModelMarket::newInstance()->getTop($from_date, 'plugins');
+    $aTopThemes    = ModelMarket::newInstance()->getTop($from_date, 'themes');
+    $aTopLanguages = ModelMarket::newInstance()->getTop($from_date, 'languages');
+
 } else if( $type == 'plugins') {
     $aTopPlugins = ModelMarket::newInstance()->getTop($from_date, $type);
 } else if( $type == 'themes') {
     $aTopThemes  = ModelMarket::newInstance()->getTop($from_date, $type);
 } else if( $type == 'languages') {
-//    $aTopLanguages = ModelMarket::newInstance()->getTop($from_date, $type);
+    $aTopLanguages = ModelMarket::newInstance()->getTop($from_date, $type);
 }
 
-function market_stats_all($type, $item_id) 
-{ 
+function market_stats_all($type, $item_id)
+{
     $items = array();
     if( Params::getParam('type_stat') == 'week' ) {
         $stats_items = ModelMarket::newInstance()->getAllStats(date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m"), date("d") - 70, date("Y")) ),'week',$type, $item_id) ;
@@ -83,14 +84,21 @@ function market_stats_all($type, $item_id)
             $items[date( 'Y-m-d', mktime(0, 0, 0, date("m"), date("d") - $k, date("Y")) )] = 0 ;
         }
     }
-    
+
     $max = 0 ;
     foreach($stats_items as $item) {
-        $items[$item['d_date']] = $item['num'] ;
+        $aux_array['num']           = $item['num'] ;
+        $aux_array['ocadmin_num']   = $item['ocadmin_num'] ;
+        $aux_array['d_date']        = $item['d_date'];
+        if(Params::getParam('type_stat')=='week') {
+            $aux_array['d_date'] .= ' '._('(start at )').' '.date('Y-M-d', strtotime($item['date_time']));
+        }
+        $items[$item['d_date']] = $aux_array;
         if( $item['num'] > $max ) {
             $max = $item['num'] ;
         }
     }
+
     return $items;
 }
 ?>
@@ -102,70 +110,64 @@ function market_stats_all($type, $item_id)
         // Set a callback to run when the Google Visualization API is loaded.
         google.setOnLoadCallback(drawChart);
 
-        // Callback that creates and populates a data table, 
+        // Callback that creates and populates a data table,
         // instantiates the pie chart, passes in the data and
         // draws it.
         function drawChart() {
             /* ITEMS */
             var data = new google.visualization.DataTable();
-            var data2 = new google.visualization.DataTable();
             data.addColumn('string', '<?php echo osc_esc_js(__('Date')); ?>');
-            data.addColumn('number', '<?php echo osc_esc_js(__('Items')); ?>');
+            data.addColumn('number', '<?php echo osc_esc_js(__('Total downloads')); ?>');
+            data.addColumn('number', '<?php echo osc_esc_js(__('oc-admin downloads')); ?>');
 
-            <?php /*ITEMS */
+            <?php
             $acomulate = 0 ;
-            $k = 0 ;
+            $i = 0 ;
             echo "data.addRows(" . count($items) . ");" ;
-            foreach($items as $date => $num) {
-                $acomulate += $num;
-                echo "data.setValue(" . $k . ', 0, "' . $date . '");';
-                echo "data.setValue(" . $k . ", 1, " . $num . ");";
-                $k++ ;
+
+            foreach($items as $k => $aux) {
+                $total = $aux['num'];
+                if(!is_numeric($total))
+                    $total = 0;
+
+                $ocadmin = $aux['ocadmin_num'];
+                if(!is_numeric($ocadmin))
+                    $ocadmin = 0;
+
+                echo "data.setValue(" . $i . ', 0, "' . $aux['d_date']. '");';
+                echo "data.setValue(" . $i . ", 1, " . $total . ");";
+                echo "data.setValue(" . $i . ", 2, " . $ocadmin . ");";
+                $i++;
             }
             ?>
 
             // Instantiate and draw our chart, passing in some options.
             var chart = new google.visualization.AreaChart(document.getElementById('placeholder'));
             chart.draw(data, {
-                colors:['#058dc7','#e6f4fa'],
-                    areaOpacity: 0.1,
-                    lineWidth:3,
-                    hAxis: {
-                    gridlines:{
-                        color: '#333',
-                        count: 3
-                    },
-                    viewWindow:'explicit',
-                    showTextEvery: 2,
-                    slantedText: false,
-                    textStyle:{
-                        color: '#058dc7',
-                        fontSize: 10
-                    }
-                    },
-                    vAxis: {
-                        gridlines:{
-                            color: '#DDD',
-                            count: 4,
-                            style: 'dooted'
-                        },
-                        viewWindow:'explicit',
-                        baselineColor:'#bababa'
-
-                    },
-                    pointSize: 6,
-                    legend: 'none',
-                    chartArea:{
-                        left:10,
-                        top:10,
-                        width:"95%",
-                        height:"80%"
-                    }
-                });
+            title : '<?php _e('Market downloads', 'market'); ?>',
+            focusTarget: 'category',
+            pointSize: 6,
+            chartArea:{
+                left:10,
+                top:10,
+                height:"90%"
+            },
+            vAxis: {
+                gridlines:{
+                    color: '#DDD',
+                    count: 4,
+                    style: 'dooted'
+                }},
+            hAxis: {
+                gridlines:{
+                    color: '#333',
+                    count: 3
+                }}
+          });
         }
     </script>
-</script>
-    
+
+
 <div class="grid-system" id="stats-page">
     <div class="grid-row grid-50 no-bottom-margin">
         <div class="row-wrapper">
@@ -192,14 +194,14 @@ function market_stats_all($type, $item_id)
             <?php } ?>
         </div>
     </div>
-   
+
     <div class="grid-row grid-100 clear">
         <div class="row-wrapper">
             <div class="widget-box">
                 <div class="widget-box-title">
                     <h3><?php _e('Downloads', 'market'); ?> - <b><?php echo $acomulate;?></b></h3>
                 </div>
-                <div class="widget-box-content">
+                <div class="widget-box-content" style="height: 220px;overflow-y: auto;">
                     <b class="stats-title"><?php _e('Top 10'); ?></b>
                     <div id="placeholder" class="graph-placeholder" style="height:150px">
                         <?php if( count($items) == 0 ) {
@@ -210,7 +212,7 @@ function market_stats_all($type, $item_id)
             </div>
         </div>
     </div>
-    
+
      <?php if($type=='all' || $type=='plugins') { ?>
      <div class="grid-row grid-50 clear">
          <div class="row-wrapper">
@@ -228,7 +230,7 @@ function market_stats_all($type, $item_id)
                                 <td class="children-cat"><a href="<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php').'?itemId='.osc_item_id(); ?>"><?php echo osc_item_title();?></a></td>
                                 <td><?php echo $auxPlugin['total'];?></td>
                             </tr>
-                        <?php } ?> 
+                        <?php } ?>
                             </tbody>
                         </table>
                     </div>
@@ -254,7 +256,33 @@ function market_stats_all($type, $item_id)
                                 <td class="children-cat"><a href="<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php').'?itemId='.osc_item_id(); ?>"><?php echo osc_item_title();?></a></td>
                                 <td><?php echo $auxTheme['total'];?></td>
                             </tr>
-                        <?php } ?> 
+                        <?php } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php } ?>
+    <?php if($type=='all' || $type=='languages') { ?>
+     <div class="grid-row grid-50 <?php if($type=='all') echo "clear"; ?>">
+         <div class="row-wrapper">
+            <div class="widget-box">
+                <div class="widget-box-title">
+                    <h3><?php _e('Top 10 Languages', 'market'); ?></h3>
+                </div>
+                <div class="widget-box-content" style="height: 220px;overflow-y: auto;">
+                    <div id="placeholder" style="height:150px">
+                        <table class="table" cellpadding="0" cellspacing="0">
+                        <tbody>
+                        <?php foreach( $aTopLanguages as $auxLanguage) { ?>
+                            <?php View::newInstance()->_exportVariableToView('item', $auxLanguage) ; ?>
+                            <tr>
+                                <td class="children-cat"><a href="<?php echo osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php').'?itemId='.osc_item_id(); ?>"><?php echo osc_item_title();?></a></td>
+                                <td><?php echo $auxLanguage['total'];?></td>
+                            </tr>
+                        <?php } ?>
                             </tbody>
                         </table>
                     </div>
