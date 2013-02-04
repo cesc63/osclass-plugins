@@ -3,7 +3,7 @@
 Plugin Name: Market
 Plugin URI: http://www.osclass.org/
 Description: This is for internal use only, DO NOT make public
-Version: 1.0
+Version: 1.2
 Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: market
@@ -22,7 +22,7 @@ Plugin update URI:
         }
         osc_set_preference('upload_path', osc_content_path().'uploads/market/', 'market', 'STRING');
         osc_set_preference('allowed_ext', 'zip', 'market', 'INTEGER');
-        osc_set_preference('market_version', '10', 'market', 'STRING');
+        osc_set_preference('market_version', '13', 'market', 'STRING');
     }
 
     function market_uninstall() {
@@ -44,6 +44,7 @@ Plugin update URI:
         if($version=='') {
             $version = 0;
         }
+
         if($version < 10) {
             // alter tables
             // add total downloads column
@@ -77,17 +78,181 @@ Plugin update URI:
             osc_set_preference('market_version', '10', 'market', 'STRING');
             osc_reset_preferences();
         }
-        // add website
+
+        // added s_banner_path at t_market table
+        if($version < 11) {
+            error_log('actualizando a 11 ...');
+            $conn      = DBConnectionClass::newInstance();
+            $data      = $conn->getOsclassDb();
+            $dbCommand = new DBCommandClass($data);
+
+            $dbCommand->query(sprintf('ALTER TABLE %s ADD COLUMN s_banner_path VARCHAR(250) NULL DEFAULT NULL AFTER s_banner', ModelMarket::newInstance()->getTable()));
+
+            $error = false;
+            // prepare banner path
+            $banner_path = osc_get_preference('upload_path', 'market');
+            $rel_banner_path  = str_replace(ABS_PATH, '', $banner_path);
+            // get all market items
+            $aMarketItems = ModelMarket::newInstance()->listAll();
+            foreach($aMarketItems as $aux) {
+                if($aux['s_banner'] != null) {
+                    $res = ModelMarket::newInstance()->update(
+                            array('s_banner_path' => $rel_banner_path),
+                            array('pk_i_id'       => $aux['pk_i_id'])
+                            );
+                    if($res===false) {
+                        $error = true;
+                    }
+                }
+            }
+
+            if($error) {
+                osc_add_flash_error_message(__('Banner was not updated with new s_banner_path', 'market'), 'admin');
+            }
+
+            osc_set_preference('market_version', '11', 'market', 'STRING');
+            osc_reset_preferences();
+        }
+        //add i_ocadmin_downloads
+        if($version < 12) {
+            $conn      = DBConnectionClass::newInstance();
+            $data      = $conn->getOsclassDb();
+            $dbCommand = new DBCommandClass($data);
+
+            $dbCommand->query(sprintf('ALTER TABLE %s ADD COLUMN i_ocadmin_downloads INT(10) NOT NULL DEFAULT \'0\' AFTER i_total_downloads', ModelMarket::newInstance()->getTable()));
+            $dbCommand->query(sprintf('ALTER TABLE %s ADD COLUMN i_ocadmin_downloads INT(10) NOT NULL DEFAULT \'0\' AFTER i_total_downloads', ModelMarket::newInstance()->getTable_Files()));
+
+            // calcular las descargas procedentes de oc-admin, que tengan version en la tabla t_market_stats, s_osclass_version
+            // init i_ocadmin_downloads -> t_market
+            ModelMarket::newInstance()->recountMarketStats();
+            // init i_ocadmin_downloads -> t_market_files
+            ModelMarket::newInstance()->recountMarketFilesStats();
+
+            osc_set_preference('market_version', '12', 'market', 'STRING');
+            osc_reset_preferences();
+        }
+
+        // add geoip country table
+        if($version < 13) {
+            $conn      = DBConnectionClass::newInstance();
+            $data      = $conn->getOsclassDb();
+            $dbCommand = new DBCommandClass($data);
+
+            $dbCommand->query(sprintf('ALTER TABLE %s ADD COLUMN s_country_code VARCHAR(2) NULL DEFAULT NULL AFTER s_osclass_version', ModelMarket::newInstance()->getTable_Stats()));
+
+            $dbCommand->query(sprintf('
+            CREATE TABLE %st_ip_ranges (
+            ip1_temp char(16),
+            ip2_temp char(16),
+            ip_from int unsigned NOT NULL PRIMARY KEY,
+            ip_to int unsigned NOT NULL UNIQUE,
+            code char(2) NOT NULL,
+            country varchar(100) NOT NULL,
+            INDEX (code)) ENGINE = InnoDB', DB_TABLE_PREFIX ));
+
+            // load csv database
+            $abs_path_to_geoip = dirname(__FILE__) . '/geoip/GeoIPCountryWhois.csv';
+            $dbCommand->query(sprintf("LOAD DATA LOCAL INFILE '%s'
+            INTO TABLE %st_ip_ranges
+            FIELDS TERMINATED BY ','
+            ENCLOSED BY '\"'
+            LINES TERMINATED BY '\n'", $abs_path_to_geoip, DB_TABLE_PREFIX));
+//
+//            // fill s_country_code using geoiplite
+//            // @todo, segmentar las actualizaciones para no petar el sevidor ni tener que
+//
+//            // create temporary table and insert all market_stats data
+//            $dbCommand->query(sprintf('
+//            CREATE TEMPORARY TABLE `oc_t_market_stats_tmp` (
+//            `fk_i_market_id` int(10) unsigned NOT NULL,
+//            `fk_i_file_id` int(10) unsigned NOT NULL,
+//            `s_hostname` varchar(250) NOT NULL,
+//            `s_ip` varchar(250) NOT NULL,
+//            `dt_date` datetime NOT NULL,
+//            `s_osclass_version` varchar(6) DEFAULT NULL,
+//            `s_country_code` varchar(2) DEFAULT NULL
+//            ) ENGINE=InnoDB DEFAULT CHARSET=utf8', DB_TABLE_PREFIX));
+
+            // update table with s_country_code using t_ip_ranges
+//            $result = $dbCommand->query(sprintf('select count( distinct(s_ip) ) as total from %st_market_stats', DB_TABLE_PREFIX));
+//            $result_count = $result->row();
+//            $total_stats = $result_count['total'];
+//            error_log('total stats ' . $total_stats);
+//            if($total_stats>0) {
+//                $offset      = 100;
+//                for($i=0;($i*$offset)<$total_stats;$i++) {
+//                    $start = $i*$offset;
+//                    $sql = sprintf('select * from %st_market_stats group by s_ip limit %d, %d', DB_TABLE_PREFIX, $start, $offset );
+//
+//                    $step_result = $dbCommand->query($sql);
+//                    $step_result = $step_result->result();
+//                    $array_ip    = array();
+//                    foreach($step_result as $stat) {
+//                        $array_ip[] = '("'.$stat['s_ip'].'")';
+//                    }
+//                    $result = $dbCommand->query( sprintf('insert into %st_market_stats_tmp (s_ip) values %s', DB_TABLE_PREFIX, implode(',', $array_ip) ));
+//                }
+//
+//                // get country_code for each ip
+//
+////                do {
+////
+////                    $result_ips = $dbCommand->query( sprintf('select count(*) as total from %st_market_stats_tmp', DB_TABLE_PREFIX) );
+////                    $sql = sprintf('update %st_market_stats_tmp SET s_country_code = ( select code from oc_t_ip_ranges where ip_from <= INET_ATON(oc_t_market_stats_tmp.s_ip) AND ip_to >= INET_ATON(oc_t_market_stats_tmp.s_ip) LIMIT 1 ) where s_country_code IS NULL limit %s', DB_TABLE_PREFIX, $offset);
+////
+////                    $dbCommand->query();
+////                    $error = $result->numRows();
+////                } while ($error > 0);
+//
+//
+//                $result_ips = $dbCommand->query( sprintf('select count(*) as total from %st_market_stats_tmp', DB_TABLE_PREFIX) );
+//                $result_ips = $result_ips->row();
+//                $total_ips = $result_ips['total'];
+//                if($total_ips > 0) {
+//                    for( $i=0;($i*$offset)<$total_ips;$i++ ) {
+//                        $start = $i*$offset;
+//                        $dbCommand->query();
+//                    }
+//                }
+//            }
+
+            osc_set_preference('market_version', '13', 'market', 'STRING');
+            osc_reset_preferences();
+        }
+
     }
     osc_add_hook('init', 'market_update_version');
 
+    // remove dash menu entry
+    $adminmenu = AdminMenu::newInstance();
+    $adminmenu->clear_menu();
+    // replace dash for market/dashboard.php
+    osc_add_admin_menu_page(
+        __('Dashboard', 'market'),
+        osc_admin_render_plugin_url('market/dashboard.php'),
+        'dash_market',
+        'moderator'
+        );
+    $adminmenu->init();
+    osc_remove_admin_menu_page('dash');
+
+
+    // market oc-admin dashboard title
+    function market_dashboard_title($string){
+        if(Params::getParam('page') == 'plugins' && Params::getParam('file') == 'market/dashboard.php'){
+            $string = __('Dashboard', 'market') . '<a href="#" class="btn ico ico-32 ico-help float-right"></a>';
+        }
+        return $string;
+    }
+    osc_add_filter('custom_plugin_title', 'market_dashboard_title');
+
+    // market oc-admin dashboard page -> redirect to market/dashboard.php
     function market_redirect_dashboard()
     {
         $page    = Params::getParam('page');
         $action  = Params::getParam('action');
         if($page=='' && $action=='') {
-            header("Location : ". osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'dashboard.php'));
-            die;
+            market_redirect_to( osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'dashboard.php') );
         }
     }
     osc_add_hook('init_admin', 'market_redirect_dashboard');
@@ -96,7 +261,7 @@ Plugin update URI:
         echo '<h3><a href="#">Market</a></h3>
         <ul>
             <li><a href="' . osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'conf.php') . '">&raquo; ' . __('Settings', 'market') . '</a></li>
-            <li><a href="'.osc_admin_configure_plugin_url("market/index.php").'">&raquo; ' . __('Configure categories', 'market') . '</a></li>
+            <li><a href="' . osc_admin_configure_plugin_url("market/index.php").'">&raquo; ' . __('Configure categories', 'market') . '</a></li>
             <li><a href="' . osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php') . '">&raquo; ' . __('Stats', 'market') . '</a></li>
         </ul>' ;
     }
@@ -124,8 +289,23 @@ Plugin update URI:
     function market_form($catId = null) {
         if($catId!="") {
             if(osc_is_this_category('market', $catId)) {
+                $detail = array();
+                $aSize        = market_banner_size($catId);
+
+                $is_theme_category  = false;
+                $sCategory          = osc_get_preference('market_categories_theme','market');
+                $aCategory          = explode(',', $sCategory );
+                if(in_array($catId , $aCategory)) {
+                    $is_theme_category = true;
+                }
+
                 $market_files = null;
-                require_once( MARKET_PLUGIN_PATH . 'item_edit.php' ) ;
+                // session variables
+                $detail = get_market_session_variables($detail);
+
+                include_once( MARKET_PLUGIN_PATH . 'item_edit.php' ) ;
+                Session::newInstance()->_clearVariables();
+                die();
             }
         }
     }
@@ -153,8 +333,23 @@ Plugin update URI:
 
             $secret = $market_item['s_secret'];
 
+            $is_theme_category  = false;
+            $sCategory          = osc_get_preference('market_categories_theme','market');
+            $aCategory          = explode(',', $sCategory );
+            if(in_array($catId , $aCategory)) {
+                $is_theme_category = true;
+            }
+
+            $aSize = market_banner_size($catId);
+            error_log( 'market antes de rellenar con los datos de la session  ' . print_r($market, true) );
+            // session variables
+            $detail = get_market_session_variables($market);
+            View::newInstance()->_exportVariableToView("market_ad", $detail);
+            error_log(print_r($detail, true));
+
             unset($market_item);
-            require_once( MARKET_PLUGIN_PATH . 'item_edit.php' ) ;
+            include_once( MARKET_PLUGIN_PATH . 'item_edit.php' ) ;
+            die();
         }
     }
 
@@ -238,9 +433,18 @@ Plugin update URI:
                         if(in_array($fileMime,$aMimesAllowed)) {
                             if (move_uploaded_file($banner['tmp_name'], osc_get_preference('upload_path', 'market').$item_id."_.jpg")) {
                                 @unlink(osc_get_preference('upload_path', 'market').$item_id.".jpg");
-                                ImageResizer::fromFile(osc_get_preference('upload_path', 'market').$item_id."_.jpg")->resizeTo(624,224)->saveToFile(osc_get_preference('upload_path', 'market').$item_id.".jpg") ;
-                                @unlink(osc_get_preference('upload_path', 'market').$item_id."_.jpg");
-                                $market->update(array('s_banner' => $item_id.".jpg"), array('pk_i_id' => $market_id));
+
+                                // prepare banner path
+                                $banner_path = osc_get_preference('upload_path', 'market');
+                                $rel_banner_path  = str_replace(ABS_PATH, '', $banner_path);
+
+
+                                $aSize = market_banner_size($catId);
+
+                                ImageResizer::fromFile($banner_path . $item_id."_.jpg")->resizeTo($aSize['w'], $aSize['h'])->saveToFile($banner_path . $item_id.".jpg") ;
+
+                                @unlink($banner_path . $item_id."_.jpg");
+                                $market->update(array('s_banner_path' => $rel_banner_path, 's_banner' => $item_id.".jpg"), array('pk_i_id' => $market_id));
                             } else {
                                 if(OC_ADMIN) {
                                     osc_add_flash_error_message(__('Banner was not uploaded because it has incorrect extension', 'market'), 'admin');
@@ -292,6 +496,7 @@ Plugin update URI:
         Session::newInstance()->_keepForm('market_slug');
         Session::newInstance()->_keepForm('market_banner');
         Session::newInstance()->_keepForm('market_featured');
+
         // ---------------------------------------------------------------------
         $market_slug            = Params::getParam("market_slug");
 
@@ -314,6 +519,26 @@ Plugin update URI:
             }
 
         }
+    }
+
+    function get_market_session_variables($detail) {
+        if( Session::newInstance()->_getForm('market_preview') != '' ) {
+            $detail['s_preview'] = Session::newInstance()->_getForm('market_preview');
+        }
+        if( Session::newInstance()->_getForm('market_slug') != '' ) {
+            $detail['s_slug'] = Session::newInstance()->_getForm('market_slug');
+        }
+        if( Session::newInstance()->_getForm('market_banner') != '' ) {
+            $detail[''] = Session::newInstance()->_getForm('market_banner');
+        }
+        error_log( ' get_market_session_variables  ' . Session::newInstance()->_getForm('market_featured') );
+        if( Session::newInstance()->_getForm('market_featured') != '' ) {
+            $detail['b_featured'] = 1;
+        } else {
+            $detail['b_featured'] = 0;
+        }
+
+        return $detail;
     }
 
     /*
@@ -382,10 +607,148 @@ Plugin update URI:
         body.compact .current #plugin_market .ico{
             background-position:-48px 0px;
         }
-    </style><?php
+    </style>
+    <?php if(Params::getParam('page')=='items' && Params::getParam('action')=='post') {
+            $title  = __('Add market item');
+            if(Params::getParam('action')=='item_edit') {
+                $title  = __('Edit market item');
+            }
+            $step = Params::getParam('step');
+        ?>
+    <style>
+        div#plugin-hook {
+            display:none;
+            width: 540px;
+        }
+        #plugin-hook .row label {
+            float:none;
+        }
+        textarea#meta_short-description,
+        #photos{
+            width: 516px;
+        }
+        #market_banner{
+            width: 540px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        // prepare step 1
+        $(document).ready(function(){
+            // remove right-side
+            $('#right-side').hide();
+            $('#left-side').attr('id', '');
+            // complete with some information
+            $('h2.render-title').text('<?php echo $title; ?>');
+
+            // hide upload images
+            $('#photos').prev('label').hide();
+            $('#photos').hide();
+            $('#photos').next('p').hide();
+
+            // hide title and description
+            $('.input-title-wide').hide();
+            $('.input-description-wide').hide();
+
+            // hide input submit
+            $('input[type="submit"]').hide();
+        });
+    </script>
+        <?php } ?>
+        <?php
     }
 
     osc_add_hook('admin_footer','market_style_admin_menu');
+
+    /**
+     * Improve add/edit market item flow
+     */
+    function market_item_flow()
+    {
+        $step           = Params::getParam('market_step');
+        $next_step      = __('Next step', 'market');
+        $s_step_2       = __(' - market information', 'market');
+        $error_step_1   = __('All fields are required', 'market');
+        $s_screenshots  = __('Screenshots', 'market');
+
+        $admin_email    = osc_logged_admin_email();
+        $admin_user     = osc_logged_admin_name();
+
+    ?>
+
+        <script type="text/javascript">
+
+            $(document).ready(function(){
+                // set default user / email
+                $('input#contactName').val('<?php echo osc_esc_js($admin_user); ?>');
+                $('input#contactEmail').val('<?php echo osc_esc_js($admin_email); ?>');
+
+                // button next step
+                var next_btn = $('<input class="btn btn-primary next-step" type="button"/>').val('<?php echo osc_esc_js($next_step); ?>');
+                $('div.form-actions').append(next_btn);
+                next_btn.click(function(){
+                    var category    =  $('select#parentCategory').val();
+                    if($.trim(category)!=''){
+                        // prepare step 2
+                        step_two();
+                    } else {
+                        // show flash message
+                        alert('<?php echo osc_esc_js($error_step_1);?>');
+                    }
+                });
+
+            });
+
+            function step_two(){
+                // update title
+                $('h2.render-title').text($('h2.render-title').text()+'<?php echo $s_step_2; ?>');
+
+                // hide step ONE
+                $('.category').hide();
+                // show step TWO
+                $('.input-title-wide').show();
+                $('.input-description-wide').show();
+
+                // save elements
+                var photos_label = $('#photos').prev('label');
+                $(photos_label).text('<?php echo $s_screenshots; ?>');
+                var photos       = $('#photos');
+                var photos_p     = $('#photos').next('p');
+                // remove elements
+                $('#photos').prev('label').remove();
+                $('#photos').remove();
+                $('#photos').next('p').remove();
+
+                $('#market_banner').before( $(photos_label).css('display', 'block') );
+                $('#market_banner').before( $(photos).css('display', 'block') );
+                $('#market_banner').before( $(photos_p).css('display', 'block') );
+
+
+                // add information
+                var screenshot_info = $('<div class="jsMessage flashmessage flashmessage-info screenshot-info" />');
+                $(screenshot_info).text('<?php _e('Screenshot images will appear at frontend market.osclass.org, at detail item page', 'market'); ?>');
+                $(screenshot_info).css('display', 'block');
+                $(screenshot_info).css('width', '480px');
+                $(screenshot_info).css('margin-bottom', '15px');
+                $('#photos').prev('label').after(screenshot_info);
+
+
+                var meta_copy = $('div.meta_list');
+                $('div.meta_list').remove();
+                $('div.input-description-wide').before(meta_copy);
+                $('textarea#meta_short-description').attr('rows', 5);
+
+                $('#plugin-hook').css('display', 'block');
+
+                // show submit input
+                $('input[type="submit"]').show();
+                $('.next-step').hide();
+            }
+        </script>
+    <?php
+
+    }
+    osc_add_hook('admin_footer','market_item_flow');
 
     /*
      * Add action at manage listings
@@ -466,7 +829,7 @@ Plugin update URI:
             // UPLOAD NEW FILE
             $file = Params::getFiles('market_file_new');
             if($file_download_url != '') {
-                ModelMarket::newInstance()->insertFile($market_id, '', Params::getParam('market_download_url'), $file_version, Params::getParam('market_new_comp_versions'), $status);
+                ModelMarket::newInstance()->insertFile($item_id, '', Params::getParam('market_download_url'), $file_version, Params::getParam('market_new_comp_versions'), $status);
                 // no errors, update item dt_mod_date
                 Item::newInstance()->update(
                         array('dt_mod_date' => date('Y-m-d H:i:s') ),
@@ -528,7 +891,6 @@ Plugin update URI:
                 );
 
                 $result = ModelMarket::newInstance()->updateFile($market_id, $file_id, $aSet );
-
                 if($result && $haveFile) {
                     @unlink($path);
                 }
@@ -549,14 +911,22 @@ Plugin update URI:
                 } else if($file['error'] == UPLOAD_ERR_INI_SIZE) {
                     $error = true;
                     $aError[] = __('Exceeded max file size', 'market');
+                } else {
+                    error_log('entra donde no tiene que entrar ');
+                    $result = true;
                 }
-            } else if($haveFile) {
+            } else if($haveFile == '1') {
+
+                error_log('_market_update_files haveFile = 1');
                 $aSet = array(
                     's_compatible'  => implode(",", $aCompatible),
                     's_download'    => ''
                 );
                 $result = ModelMarket::newInstance()->updateFile($market_id, $file_id, $aSet );
             }
+
+            error_log('$haveFile '.$haveFile);
+
             if(!$result) {
                 $error = true;
                 $aError[] = __('There are problems updating file market', 'market');
@@ -564,7 +934,7 @@ Plugin update URI:
                 // no errors, update item dt_mod_date
                 Item::newInstance()->update(
                         array('dt_mod_date' => date('Y-m-d H:i:s') ),
-                        array('pk_i_id' => $market_id)
+                        array('pk_i_id' => $item_id)
                         );
             }
         }

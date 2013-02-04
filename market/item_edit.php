@@ -1,6 +1,7 @@
 <?php $market_versions = explode(",", osc_get_preference('compatible_versions', 'market')); ?>
 
 <?php
+// @todo mirar de ponerlo en index.php
     $item = __get('item');
     if(@$item_id) {
         $market = ModelMarket::newInstance()->findByItemId( $item_id );
@@ -27,55 +28,77 @@
         box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
         vertical-align: top;
     }
+    #market_slug {
+        width: 516px;
+    }
+
+    h2 {
+        margin: 0;
+        margin-bottom: 20px;
+        color: #616161;
+        font-size: 21px;
+        font-weight: normal;
+    }
 </style>
-<h2><?php _e('Market attributes', 'market'); ?></h2>
 <?php if(!OC_ADMIN) { ?>
 <div style="margin-top:10px;margin-bottom:10px;">
     <span style="font-style: italic;"><b><?php _e('NOTE', 'market'); ?>:</b> <?php _e('Once you have inserted the listing, through your my account you can add new market files','market');?></span>
 </div>
 <?php } ?>
-<div class="grid-row grid-100">
-    <h3><?php _e('Information', 'market'); ?></h3>
+<div class="grid-100">
+    <h2><?php _e('Information', 'market'); ?></h2>
     <div>
         <?php if(osc_is_admin_user_logged_in()) { ?>
         <label><?php _e('Slug','market'); ?> <?php if(@$item_id) { ?><b>( <?php _e('Slug cannot be updated is used as ID','market'); ?>) </b><?php } ?></label>
         <div>
             <?php if(@$item_id) { ?>
-            <span class="input"><?php echo @$market['s_slug']; ?></span>
-            <input type="hidden" name="market_slug" id="market_slug" value="<?php echo @$market['s_slug']; ?>" />
+            <span class="input"><?php echo @$detail['s_slug']; ?></span>
+            <input type="hidden" name="market_slug" id="market_slug" value="<?php echo @$detail['s_slug']; ?>" />
             <?php } else { ?>
-            <input <?php if(@$item_id){ echo "disabled";}?> type="text" name="market_slug" id="market_slug" value="<?php echo @$market['s_slug']; ?>" />
+            <input <?php if(@$item_id){ echo "disabled";}?> type="text" name="market_slug" id="market_slug" value="<?php echo @$detail['s_slug']; ?>" />
             <?php } ?>
         </div>
     </div>
+    <?php if($is_theme_category) { ?>
     <div style="clear: both;"></div>
     <div>
         <label><?php _e('Live Preview (in case of themes)','market'); ?></label>
         <div>
-            <input type="text" name="market_preview" id="market_preview" value="<?php echo @$market['s_preview']; ?>" />
+            <input type="text" name="market_preview" id="market_preview" value="<?php echo @$detail['s_preview']; ?>" />
         </div>
         <?php }; ?>
     </div>
+    <?php } ?>
     <div style="clear: both;"></div>
     <div>
-        <label>
-            <input type='checkbox' value='1' <?php if(@$market['b_featured']==1) { ?>checked="checked"<?php } ?> name='market_featured' />
-            <?php _e('Mark as featured','market'); ?>
-        </label>
+        <label><?php _e('Featured item','market'); ?></label>
+        <div>
+            <label>
+                <input type='checkbox' value='1' <?php if(@$detail['b_featured']==1) { ?>checked="checked"<?php } ?> name='market_featured' />
+                <?php _e('Mark as featured','market'); ?>
+            </label>
+        </div>
     </div>
+    <br/>
     <div style="clear: both;"></div>
+    <h2><?php _e('Media resources', 'market'); ?></h2>
+    <hr/>
     <div id="market_banner">
+        <hr/>
         <label><?php _e('Upload a banner', 'market') ; ?></label>
+        <div class="jsMessage flashmessage flashmessage-info screenshot-info" style="display: block; width: 480px; margin-bottom: 15px;">
+            <?php echo sprintf(__('Important information: Banner image will be resized to <b>%sx%s</b>, uploaded image should keep that ratio.', 'market'), $aSize['w'], $aSize['h'] ); ?>
+        </div>
         <div style="padding: 10px;background-color: #F3F3F3;border: solid 1px #DDD;border-radius: 4px;-webkit-border-radius: 4px;">
             <input type="file" name="market_banner" />
             <?php if(@$item_id) { ?><br/>(<?php _e('Banner will be overwritten if there is an existing one'); ?>)<?php } ?>
         </div>
     </div>
-        <?php if(isset($market['s_banner']) && $market['s_banner']!='') { ?>
+        <?php if(isset($detail['s_banner']) && @$detail['s_banner']!='') { ?>
             <div id="banner">
-                <img src="<?php echo osc_base_url()."oc-content/uploads/market/".$market['s_banner']; ?>" />
+                <img src="<?php echo osc_base_url()."oc-content/uploads/market/".@$detail['s_banner']; ?>" />
                 <div class="clear"></div>
-                <a class="btn btn-red" href="javascript:delete_market_banner(<?php echo  @$market['fk_i_item_id'] . ", '" . $secret ."'";?>);"><?php _e('Remove image', 'market'); ?></a>
+                <a class="btn btn-red" href="javascript:delete_market_banner(<?php echo @$detail['fk_i_item_id'] . ", '" . $secret ."'";?>);"><?php _e('Remove image', 'market'); ?></a>
                 <div class="clear"></div>
             </div>
         <?php }; ?>
@@ -86,6 +109,18 @@
     <div class="clear"></div>
 
 <script type="text/javascript">
+<?php if(!is_numeric($item_id)) { ?>
+    $(document).ready(function(){
+        // validate market item slug
+        $('#market_slug').rules("add", {
+            required: true,
+            remote: '<?php echo osc_ajax_plugin_url( osc_plugin_folder(__FILE__).'check_slug.php' ); ?>',
+            messages: {
+                required: "<?php _e("Slug: this field is required", 'market'); ?>",
+                remote: "<?php _e("Existing market slug", 'market'); ?>"
+        }});
+    });
+<?php } ?>
 
     function delete_market_banner(item_id, secret) {
         var result = confirm('<?php echo __('This action can\\\'t be undone. Are you sure you want to continue?', 'market'); ?>');
