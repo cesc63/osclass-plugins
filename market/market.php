@@ -44,8 +44,6 @@
         if(Params::getParam('order')!='') {
             $order = Params::getParam('order');
         }
-        error_log($section." ,,,,,...----> " . $sort . " _ " . $order);
-
 
         switch($section) {
             case 'search':
@@ -129,6 +127,15 @@
                     break;
                 }
                 echo json_encode($array); exit;
+                break;
+            case 'dashboardbox':
+                $totalP     = $mUni->countData('PLUGIN');
+                $totalT     = $mUni->countData('THEME');
+
+                $output  = '<div id="banner-randomid"><div class="title">Get a new look for your website and do the impossible with hundreds of themes and plugins available for free!</div><a href="{URL_MARKET_THEMES}" class="box">'.$totalT.'<span>themes</span></a> <a href="{URL_MARKET_PLUGINS}" class="right box">'.$totalP.'<span>plugins</span></a><a href="{URL_MARKET_THEMES}" class="browse">browse all themes</a> <a href="{URL_MARKET_PLUGINS}" class="browse right">browse all plugins</a></div>';
+                $output .= '<style>#banner-randomid{background-color:#4d4d4d;color:#fff;padding:15px;width:380px;overflow:hidden;height:220px}#banner-randomid .title{font-size:20px;font-weight:200;text-align:center;padding-bottom:17px}#banner-randomid a.box{border-radius:5px;padding:2px 15px 15px;background:#7ed1e1;color:white;font-size:60px;font-weight:200;font-family:"HelveticaNeue-Light","Helvetica Neue Light","Helvetica Neue",Helvetica,Arial,Verdana,sans-serif;display:block;float:left;margin-left:40px;width:100px}#banner-randomid a.box span{font-size:16px;display:block;line-height:16px;margin-top:-6px}#banner-randomid a.box:hover{text-decoration:none}#banner-randomid a.browse{margin-left:40px;padding-top:5px;display:block;clear:both;color:#bababa;text-decoration:underline;float:left;width:130px}#banner-randomid a.right{float:right;margin-right:40px;margin-left:0;clear:none}</style>';
+
+                echo $output; exit;
                 break;
             default:
                 $plugins    = $mUni->getPlugins();
