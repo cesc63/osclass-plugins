@@ -305,7 +305,6 @@ Plugin update URI:
 
                 include_once( MARKET_PLUGIN_PATH . 'item_edit.php' ) ;
                 Session::newInstance()->_clearVariables();
-                die();
             }
         }
     }
@@ -349,7 +348,6 @@ Plugin update URI:
 
             unset($market_item);
             include_once( MARKET_PLUGIN_PATH . 'item_edit.php' ) ;
-            die();
         }
     }
 
