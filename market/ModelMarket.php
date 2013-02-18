@@ -423,7 +423,31 @@
             } else {
                 return true;
             }
+        }
 
+        /**
+         * Update a file
+         */
+        public function featuredOn($item_id) {
+            $return = $this->dao->update($this->getTable(),
+                    array('b_featured'      => '1'),
+                    array('fk_i_item_id'    => $item_id));
+
+            if($return === false) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        public function featuredOff($item_id) {
+            $return = $this->dao->update($this->getTable(),
+                    array('b_featured'      => '0'),
+                    array('fk_i_item_id'    => $item_id));
+            if($return === false) {
+                return false;
+            } else {
+                return true;
+            }
         }
 
         /**
@@ -1177,23 +1201,21 @@
             $this->dao->from($this->getTable_Files());
             $this->dao->join(sprintf( '(%s) as aux', $subquery ), "aux.pk_i_id = ".DB_TABLE_PREFIX."t_market_files.pk_i_id ", "RIGHT");
             // order
-//            $this->dao->orderBy(DB_TABLE_PREFIX.'t_market_files.pk_i_id', 'DESC') ;
-            error_log('ORDERBY...');
             if($sort == 'downloads') {
-                error_log('Downloaded  ');
                 $this->dao->orderBy('aux.i_total_downloads', $order);
             } else if($sort == 'updated') {
-                error_log('Updated ');
-                $this->dao->orderBy(DB_TABLE_PREFIX.'t_market_files.pk_i_id', $order);
+                $this->dao->orderBy('aux.dt_mod_date', $order);
             } else {
-                $this->dao->orderBy(DB_TABLE_PREFIX.'t_market_files.pk_i_id', $order);
+                $this->dao->orderBy('aux.dt_mod_date', $order);
             }
 
             $this->dao->groupBy($this->getTable_Files().".fk_i_market_id");
             $this->dao->limit($start, $this->pageSize);
 
 
-            error_log( $this->dao->_getSelect() );
+//            error_log('->>>>');
+//            error_log( $this->dao->_getSelect() );
+
             $result = $this->dao->get() ;
 
             if($result!==false) {

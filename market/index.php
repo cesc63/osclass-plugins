@@ -17,6 +17,19 @@ Plugin update URI:
 
     function market_install() {
         ModelMarket::newInstance()->import('market/struct.sql') ;
+
+        $conn      = DBConnectionClass::newInstance();
+        $data      = $conn->getOsclassDb();
+        $dbCommand = new DBCommandClass($data);
+
+        // load csv database
+        $abs_path_to_geoip = dirname(__FILE__) . '/geoip/GeoIPCountryWhois.csv';
+        $dbCommand->query(sprintf("LOAD DATA LOCAL INFILE '%s'
+        INTO TABLE %st_ip_ranges
+        FIELDS TERMINATED BY ','
+        ENCLOSED BY '\"'
+        LINES TERMINATED BY '\n'", $abs_path_to_geoip, DB_TABLE_PREFIX));
+
         if(!is_dir(osc_content_path().'uploads/market/')) {
             @mkdir(osc_content_path().'uploads/market/');
         }
@@ -326,9 +339,9 @@ Plugin update URI:
 
     function market_item_edit($catId = null, $item_id = null) {
         if( osc_is_this_category('market', $catId) ) {
-            $market_files = ModelMarket::newInstance()->getFilesFromItem($item_id);
-            $market = ModelMarket::newInstance()->findByItemId($item_id);
-            $market_item = Item::newInstance()->findByPrimaryKey($item_id);
+            $market_files   = ModelMarket::newInstance()->getFilesFromItem($item_id);
+            $market         = ModelMarket::newInstance()->findByItemId($item_id);
+            $market_item    = Item::newInstance()->findByPrimaryKey($item_id);
 
             $secret = $market_item['s_secret'];
 
@@ -485,10 +498,10 @@ Plugin update URI:
 
     function market_pre_item_post() {
         // --- save attributes into session ------------------------------------
-        Session::newInstance()->_setForm('market_preview', Params::getParam("market_preview") );
-        Session::newInstance()->_setForm('market_slug'   , Params::getParam("market_slug") );
-        Session::newInstance()->_setForm('market_banner' , Params::getParam("market_banner") );
-        Session::newInstance()->_setForm('market_featured' , Params::getParam("market_featured") );
+        Session::newInstance()->_setForm('market_preview'   , Params::getParam("market_preview") );
+        Session::newInstance()->_setForm('market_slug'      , Params::getParam("market_slug") );
+        Session::newInstance()->_setForm('market_banner'    , Params::getParam("market_banner") );
+        Session::newInstance()->_setForm('market_featured'  , Params::getParam("market_featured") );
         // keep form
         Session::newInstance()->_keepForm('market_preview');
         Session::newInstance()->_keepForm('market_slug');
@@ -519,7 +532,7 @@ Plugin update URI:
         }
     }
 
-    function get_market_session_variables($detail) {
+    function get_market_session_variables(&$detail) {
         if( Session::newInstance()->_getForm('market_preview') != '' ) {
             $detail['s_preview'] = Session::newInstance()->_getForm('market_preview');
         }
@@ -529,11 +542,8 @@ Plugin update URI:
         if( Session::newInstance()->_getForm('market_banner') != '' ) {
             $detail[''] = Session::newInstance()->_getForm('market_banner');
         }
-        error_log( ' get_market_session_variables  ' . Session::newInstance()->_getForm('market_featured') );
         if( Session::newInstance()->_getForm('market_featured') != '' ) {
             $detail['b_featured'] = 1;
-        } else {
-            $detail['b_featured'] = 0;
         }
 
         return $detail;
@@ -606,30 +616,42 @@ Plugin update URI:
             background-position:-48px 0px;
         }
     </style>
-    <?php if(Params::getParam('page')=='items' && Params::getParam('action')=='post') {
+
+    <?php
+
+    if(Params::getParam('page')=='items') {
+        if(Params::getParam('action')=='post') {
             $title  = __('Add market item');
-            if(Params::getParam('action')=='item_edit') {
-                $title  = __('Edit market item');
-            }
-            $step = Params::getParam('step');
-        ?>
+        }
+        if(Params::getParam('action')=='item_edit') {
+            $title  = __('Edit market item');
+        }
+        $step = Params::getParam('step');
+
+    ?>
     <style>
+        textarea#meta_short-description,
+        .photo_container{
+            width: 516px;
+        }
+        #market_banner,
+        .fit_market{
+            width: 540px;
+        }
+        <?php if(Params::getParam('action')=='post') { ?>
         div#plugin-hook {
             display:none;
             width: 540px;
         }
+        .meta_list {
+            display:none;
+        }
         #plugin-hook .row label {
             float:none;
         }
-        textarea#meta_short-description,
-        #photos{
-            width: 516px;
-        }
-        #market_banner{
-            width: 540px;
-        }
+        <?php } ?>
     </style>
-
+    <?php if(Params::getParam('action')=='post') { ?>
     <script type="text/javascript">
         // prepare step 1
         $(document).ready(function(){
@@ -640,9 +662,7 @@ Plugin update URI:
             $('h2.render-title').text('<?php echo $title; ?>');
 
             // hide upload images
-            $('#photos').prev('label').hide();
-            $('#photos').hide();
-            $('#photos').next('p').hide();
+            $('.photo_container').hide();
 
             // hide title and description
             $('.input-title-wide').hide();
@@ -652,7 +672,9 @@ Plugin update URI:
             $('input[type="submit"]').hide();
         });
     </script>
-        <?php } ?>
+        <?php
+            }
+        } ?>
         <?php
     }
 
@@ -673,17 +695,15 @@ Plugin update URI:
         $admin_user     = osc_logged_admin_name();
 
     ?>
-
         <script type="text/javascript">
-
             $(document).ready(function(){
+            <?php if(Params::getParam('page')=='items' && Params::getParam('action')=='post') { ?>
                 // set default user / email
                 $('input#contactName').val('<?php echo osc_esc_js($admin_user); ?>');
                 $('input#contactEmail').val('<?php echo osc_esc_js($admin_email); ?>');
-
                 // button next step
                 var next_btn = $('<input class="btn btn-primary next-step" type="button"/>').val('<?php echo osc_esc_js($next_step); ?>');
-                $('div.form-actions').append(next_btn);
+
                 next_btn.click(function(){
                     var category    =  $('select#parentCategory').val();
                     if($.trim(category)!=''){
@@ -695,9 +715,14 @@ Plugin update URI:
                     }
                 });
 
+                $('div.form-actions').append(next_btn);
+            <?php } else if(Params::getParam('page')=='items' && Params::getParam('action')=='item_edit') { ?>
+
+            <?php } ?>
             });
 
-            function step_two(){
+            function step_two() {
+                console.log('step two');
                 // update title
                 $('h2.render-title').text($('h2.render-title').text()+'<?php echo $s_step_2; ?>');
 
@@ -706,30 +731,7 @@ Plugin update URI:
                 // show step TWO
                 $('.input-title-wide').show();
                 $('.input-description-wide').show();
-
-                // save elements
-                var photos_label = $('#photos').prev('label');
-                $(photos_label).text('<?php echo $s_screenshots; ?>');
-                var photos       = $('#photos');
-                var photos_p     = $('#photos').next('p');
-                // remove elements
-                $('#photos').prev('label').remove();
-                $('#photos').remove();
-                $('#photos').next('p').remove();
-
-                $('#market_banner').before( $(photos_label).css('display', 'block') );
-                $('#market_banner').before( $(photos).css('display', 'block') );
-                $('#market_banner').before( $(photos_p).css('display', 'block') );
-
-
-                // add information
-                var screenshot_info = $('<div class="jsMessage flashmessage flashmessage-info screenshot-info" />');
-                $(screenshot_info).text('<?php _e('Screenshot images will appear at frontend market.osclass.org, at detail item page', 'market'); ?>');
-                $(screenshot_info).css('display', 'block');
-                $(screenshot_info).css('width', '480px');
-                $(screenshot_info).css('margin-bottom', '15px');
-                $('#photos').prev('label').after(screenshot_info);
-
+                $('.meta_list').show();
 
                 var meta_copy = $('div.meta_list');
                 $('div.meta_list').remove();
@@ -744,9 +746,62 @@ Plugin update URI:
             }
         </script>
     <?php
-
     }
-    osc_add_hook('admin_footer','market_item_flow');
+    osc_add_hook('admin_header','market_item_flow');
+
+    function ajax_featured_off()
+    {
+        $return = false;
+        $item = Item::newInstance()->findByPrimaryKey(Params::getParam('itemId'));
+        if($item!== FALSE ) {
+            error_log($item['s_secret'].'    ==    '.Params::getParam('secret') );
+            if($item['s_secret'] == Params::getParam('secret')) {
+
+                $return = ModelMarket::newInstance()->featuredOff(Params::getParam('itemId'));
+            }
+        }
+        
+        if($return) {
+            osc_add_flash_ok_message(__('Listing Featured successfully', 'market'), 'admin');
+        } else {
+            osc_add_flash_error_message(__('Listing cannot be featured successfully', 'market'), 'admin');
+        }
+        market_redirect_to( $_SERVER['HTTP_REFERER'] );
+    }
+    osc_add_hook('ajax_admin_featured_off', 'ajax_featured_off');
+
+    function ajax_featured_on()
+    {
+        $return = false;
+        $item = Item::newInstance()->findByPrimaryKey(Params::getParam('itemId'));
+        if($item!== FALSE ) {
+            error_log($item['s_secret'].'    ==    '.Params::getParam('secret') );
+            if($item['s_secret'] == Params::getParam('secret')) {
+                $return = ModelMarket::newInstance()->featuredOn(Params::getParam('itemId'));
+            }
+        }
+
+        if($return) {
+            osc_add_flash_ok_message(__('Listing Featured successfully', 'market'), 'admin');
+        } else {
+            osc_add_flash_error_message(__('Listing cannot be featured successfully', 'market'), 'admin');
+        }
+        market_redirect_to( $_SERVER['HTTP_REFERER'] );
+    }
+    osc_add_hook('ajax_admin_featured_on', 'ajax_featured_on');
+
+    /**
+     * highlight featured items
+     */
+    function market_highlight_featured($array, $item)
+    {
+        $market = ModelMarket::newInstance()->findByItemId($item['pk_i_id']);
+        if($market['b_featured'] == 1) {
+            $array['title'] = $array['title'].'<i style="float: right; padding-right: 15px;"><b>'.__('Featured', 'market').'</b></i>';
+        }
+        return $array;
+    }
+    osc_add_hook('items_processing_row', 'market_highlight_featured');
 
     /*
      * Add action at manage listings
@@ -756,8 +811,15 @@ Plugin update URI:
         // si market files ...
         $aux = array();
         // add actions
+        $market = ModelMarket::newInstance()->findByItemId($item['pk_i_id']);
         $aux[] = '<a href="'.osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'market_file_frm.php').'?itemId='.$item['pk_i_id'].'">'.__('Add/Edit files', 'market').'</a>';
         $aux[] = '<a href="'.osc_admin_render_plugin_url(osc_plugin_folder(__FILE__) . 'stats.php').'?itemId='.$item['pk_i_id'].'">'.__('Show stats', 'market').'</a>';
+        if($market['b_featured']==1) {
+            $aux[] = '<a href="'.osc_admin_ajax_hook_url('featured_off').'&itemId='.$item['pk_i_id'].'&secret='.$item['s_secret'].'">'.__('Featured off', 'market').'</a>';
+        } else {
+            $aux[] = '<a href="'.osc_admin_ajax_hook_url('featured_on').'&itemId='.$item['pk_i_id'].'&secret='.$item['s_secret'].'">'.__('Featured on', 'market').'</a>';
+        }
+
         foreach($options as $value) {
             $aux[] = $value;
         }

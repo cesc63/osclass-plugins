@@ -8,6 +8,10 @@
         $market['files'][0] = ModelMarket::newInstance()->getFileFromItem( $item_id );
         View::newInstance()->_exportVariableToView("market_ad", $market);
     }
+
+    $admin_email    = osc_logged_admin_email();
+    $admin_user     = osc_logged_admin_name();
+
 ?>
 <style>
     .input {
@@ -81,8 +85,10 @@
     </div>
     <br/>
     <div style="clear: both;"></div>
-    <h2><?php _e('Media resources', 'market'); ?></h2>
-    <hr/>
+    <div class="fit_market">
+        <h2><?php _e('Media resources', 'market'); ?></h2>
+        <hr/>
+    </div>
     <div id="market_banner">
         <hr/>
         <label><?php _e('Upload a banner', 'market') ; ?></label>
@@ -109,7 +115,40 @@
     <div class="clear"></div>
 
 <script type="text/javascript">
-<?php if(!is_numeric($item_id)) { ?>
+        function repaint_photos() {
+            $('#right-side').hide();
+            $('#left-side').attr('id', '');
+            // set default user / email
+            $('input#contactName').val('<?php echo osc_esc_js($admin_user); ?>');
+            $('input#contactEmail').val('<?php echo osc_esc_js($admin_email); ?>');
+
+            // move category dropdowns
+            var category_div = $('div.category');
+            $(category_div).css('padding-bottom', '15px');
+            $('div.category').remove();
+            $('div.input-title-wide').before(category_div);
+
+            var meta_copy = $('div.meta_list');
+            $('div.meta_list').remove();
+            $('div.input-description-wide').before(meta_copy);
+            $('textarea#meta_short-description').attr('rows', 5);
+
+            // save elements
+            var photo_container = $('.photo_container');
+            $('.photo_container').remove();
+            $('#market_banner').before( $(photo_container).css('display', 'block') );
+
+            // add information
+            var screenshot_info = $('<div class="jsMessage flashmessage flashmessage-info screenshot-info" />');
+            $(screenshot_info).text('<?php _e('Screenshot images will appear at frontend market.osclass.org, at detail item page', 'market'); ?>');
+            $(screenshot_info).css('display', 'block');
+            $(screenshot_info).css('width', '480px');
+            $(screenshot_info).css('margin-bottom', '15px');
+            $('#photos').before(screenshot_info);
+        }
+        repaint_photos();
+
+<?php if(!is_numeric(@$item_id)) { ?>
     $(document).ready(function(){
         // validate market item slug
         $('#market_slug').rules("add", {
