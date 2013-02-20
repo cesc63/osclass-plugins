@@ -1,0 +1,48 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin remove users\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-08-24 13:19+0100\n"
+"PO-Revision-Date: 2013-01-30 15:51+0100\n"
+"Last-Translator: Juan Ramón <juanramon@osclass.org>\n"
+"Language-Team: osclass <info@osclass.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-SearchPath-0: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users\n"
+
+#: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users/confirm_unsubscribe.php:25
+msgid "Unsubscribe"
+msgstr "Usuń"
+
+#: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users/confirm_unsubscribe.php:27
+msgid "All your listings and alerts will be removed."
+msgstr "Twoje ogłoszenia i powiadomienia zostaną usunięte"
+
+#: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users/confirm_unsubscribe.php:31
+msgid "I'm sure"
+msgstr "Jestem pewna/pewien"
+
+#: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users/confirm_unsubscribe.php:33
+msgid "Cancel"
+msgstr "Anuluj"
+
+#: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users/confirm_unsubscribe.php:38
+#: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users/unsubscribe.php:12
+msgid "Unsubscribed succesfully."
+msgstr "Konto zostało usunięte pomyślnie"
+
+#: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users/confirm_unsubscribe.php:40
+#: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users/unsubscribe.php:14
+#: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users/unsubscribe.php:18
+msgid "Cannot unsubscribe user."
+msgstr "Nie można usunąć użytkownika"
+
+#: /Users/ssuareza/projects/osclass-plugins-priv/osclass-plugins/remove_users/index.php:18
+msgid "Unsubcribe account"
+msgstr "Usuń konto"
+
