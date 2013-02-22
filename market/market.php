@@ -19,13 +19,10 @@
         // only show enabled files.
         $file = ModelMarket::newInstance()->getFileBySlug($slug, $version, true);
         if( !empty($file) ) {
-            if($file['s_download']=='') {
-            }
-            $file['s_source_file'] = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $code ;
+            $file['s_source_file'] = market_file_download_url( $code );
             $file['error'] = 0;
             echo json_encode($file) ; exit ;
         }
-
     } else {
 
         $mUni = ModelMarket::newInstance();
@@ -53,9 +50,6 @@
 
             case 'plugins':
                 $total   = $mUni->countData('PLUGIN');
-
-                error_log('plugins ... ');
-
                 $plugins = $mUni->getPlugins($page, $pageSize, $sort, $order);
                 $array = array(
                     'plugins'   => $plugins,

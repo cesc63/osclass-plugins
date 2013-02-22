@@ -18,20 +18,13 @@
                 $file = ModelMarket::newInstance()->getFileForDownloadBySlug($slug, $version) ;
 
                 if( !empty($file) ) {
-                    if($file['s_download']!='') {
-                        // OJO TOBE REMOVED
-                        ModelMarket::newInstance()->insertStat($file['fk_i_market_id'], $file['pk_i_id'], isset($_SERVER['REMOTE_HOST'])?$_SERVER['REMOTE_HOST']:'', isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'', '') ;
-                        $json = array('msg' => '<iframe src="'.$file['s_download'].'" width="0" heigtht="0" style="width: 0px; height: 0px; display: none;"></iframe>', 'error' => 0);
-                    } else if($file['s_source_file']!='') {
+                    if($file['s_source_file']!='') {
                         // create download url
-                        $s_download = osc_base_url() . 'oc-content/plugins/market/download.php?code='.$file['s_update_url'].'@'.$file['s_version'];
-                        error_log('ajax.php?paction=download '.$s_download);
-                        // OJO TOBE REMOVED
-                        ModelMarket::newInstance()->insertStat($file['fk_i_market_id'], $file['pk_i_id'], isset($_SERVER['REMOTE_HOST'])?$_SERVER['REMOTE_HOST']:'', isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'', '') ;
+                        $s_download = market_file_download_url($file['s_update_url'], $file['s_version']);
                         $json = array('msg' => '<iframe src="'. $s_download .'" width="0" heigtht="0" style="width: 0px; height: 0px; display: none;"></iframe>', 'error' => 0);
+                    } else {
+                        $json = array('msg' => '', 'error' => 1);
                     }
-
-
                 }
             }
             echo json_encode($json);

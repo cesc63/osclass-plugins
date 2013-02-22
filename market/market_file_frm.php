@@ -61,7 +61,7 @@ if(!isset($item_id) || !is_numeric($item_id)) {
         // clear variables used to refill inputs
         $aCompatible        = explode(',', $file_info['s_compatible']);
         $file_version       = $file_info['s_version'];
-        $file_download_url  = $file_info['s_download'];
+//        $file_download_url  = $file_info['s_download'];
         $file_download_file = $file_info['s_file'];
 
         $isEdit     = true;
@@ -116,7 +116,7 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                 <td valign="top">
                     <div id="market_files">
                         <div>
-                            <label><?php _e('File version', 'market'); ?></label>
+                            <h3><?php _e('File version', 'market'); ?></h3>
                             <?php if($isEdit) { ?>
                             <span class="input"><?php echo @$file_version; ?></span>
                             <input type="hidden" name="market_version_new" id="market_version_new" value="<?php echo osc_esc_html( @$file_version ); ?>" />
@@ -125,8 +125,9 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                             <input type="text" name="market_version_new" id="market_version_new" value="<?php echo osc_esc_html( @$file_version ); ?>" />
                             <?php } ?>
                         </div>
+
                         <div>
-                            <label><?php _e('Compatible with', 'market'); ?></label>
+                            <h3><?php _e('Compatible with', 'market'); ?></h3>
                             <div>
                                 <?php foreach($market_versions as $v) { ?>
                                 <?php
@@ -141,26 +142,10 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                         </div>
 
                         <div>
-                            <label><?php _e('Download file'); ?></label>
-                        </div>
-                        <div id="tabs_upload">
-                            <ul>
+                            <h3><?php _e('Download file'); ?></h3>
+                            <div class="well">
                                 <?php if(isset($file_download_file) && !empty($file_download_file) && file_exists($file_download_file) ) { ?>
-                                <li><a href="#market-url"><?php _e('Download URL', 'market'); ?></a></li>
-                                <li class="ui-tabs-selected ui-state-active"><a href="#market-file"><?php _e('Download file', 'market'); ?></a></li>
-                                <?php } else { ?>
-                                <li class="ui-tabs-selected ui-state-active"><a href="#market-url"><?php _e('Download URL', 'market'); ?></a></li>
-                                <li><a href="#market-file"><?php _e('Download file', 'market'); ?></a></li>
-                                <?php } ?>
-                            </ul>
-                            <div id="market-url" class="row-wrapper">
-                                <label><?php _e('Download URL','market'); ?></label>
-                                <input type="text" name="market_download_url" id="market_download_url" value="<?php echo osc_esc_html(@$file_download_url);?>" />
-                                <label><?php _e('If \'Download URL\' is set,  cannot be uploaded files' , 'market'); ?></label>
-                            </div>
-                            <div id="market-file" class="row-wrapper">
-                                <?php if(isset($file_download_file) && !empty($file_download_file) && file_exists($file_download_file) ) { ?>
-                                <a target="_blank" href="<?php echo osc_base_url() . 'oc-content/plugins/market/download.php?code=';?><?php echo $market['s_slug'];?>@<?php echo $file_version;?>"><?php _e('Download attachment', 'market');?></a>
+                                <a target="_blank" href="<?php echo market_file_download_url($market['s_slug'], $file_version); ?>"><?php _e('Download attachment', 'market');?></a>
                                 <input type="hidden" name="market_file_exist" value="1"/>
                                 <?php } ?>
                                 <label><?php printf(__('Allowed extensions are %s. Any other file will not be uploaded', 'market'), osc_get_preference('allowed_ext', 'market')) ; ?></label>
@@ -168,6 +153,7 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                                 <label><?php _e('If \'Download URL\' is set,  cannot be uploaded files' , 'market'); ?></label>
                             </div>
                         </div>
+
                         <div class="clear"></div>
                     </div>
 
@@ -186,23 +172,15 @@ if(!isset($item_id) || !is_numeric($item_id)) {
                     <div id="<?php echo $slug_file;?>" style="padding: 10px;background-color: #F3F3F3;border: solid 1px #DDD;border-radius: 4px;-webkit-border-radius: 4px;">
                         <div style="">
                             <div>
-                                <?php if($_r['s_download']!='') { ?>
-                                    <label><?php _e('Download URL','market'); ?></label>
-                                    <div>
-                                        <?php echo $_r['s_download'];?> <br />
-                                        <a target="_blank" href="<?php echo osc_base_url() . 'oc-content/plugins/market/download.php?code=';?><?php echo $market['s_slug'];?>@<?php echo $_r['s_version'];?>"><?php _e('Download', 'market');?></a>
-                                    </div>
+                                <?php $tmp = explode("/", $_r['s_file'] ); ?>
+                                <?php if( $tmp[count($tmp)-1] ) { ?>
+                                <label><?php _e('Download URL','market'); ?></label>
+                                <div>
+                                    <?php echo $tmp[count($tmp)-1]; ?><br />
+                                    <a target="_blank" href="<?php echo market_file_download_url($market['s_slug'], $_r['s_version']); ?>"><?php _e('Download attachment', 'market');?></a>
+                                </div>
                                 <?php } else { ?>
-                                    <?php $tmp = explode("/", $_r['s_file'] ); ?>
-                                    <?php if( $tmp[count($tmp)-1] ) { ?>
-                                    <label><?php _e('Download URL','market'); ?></label>
-                                    <div>
-                                        <?php echo $tmp[count($tmp)-1]; ?><br />
-                                        <a target="_blank" href="<?php echo osc_base_url() . 'oc-content/plugins/market/download.php?code=';?><?php echo $market['s_slug'];?>@<?php echo $_r['s_version'];?>"><?php _e('Download attachment', 'market');?></a>
-                                    </div>
-                                    <?php } else { ?>
-                                    <?php _e('No download file');?>
-                                    <?php } ?>
+                                <?php _e('No download file');?>
                                 <?php } ?>
                             </div>
                             <div>
@@ -271,12 +249,6 @@ if(!isset($item_id) || !is_numeric($item_id)) {
         },1250);
 
         <?php } ?>
-
-
-        $(function() {
-            $( "#tabs_files" ).tabs();
-            $( "#tabs_upload" ).tabs();
-        });
 
         var ufIndex = 0;
         function gebi(id) { return document.getElementById(id); }
@@ -362,7 +334,6 @@ if(!isset($item_id) || !is_numeric($item_id)) {
 function market_admin_add_file($item_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible)
 {
     _market_add_file($item_id, $market, $error, $aError, $file_version, $file_download_url, $aCompatible, 1);
-//    _market_add_file($item_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible, 1);
 }
 
 /*

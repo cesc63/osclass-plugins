@@ -1,4 +1,4 @@
-<?php 
+<?php
 $item_id    = Params::getParam('itemId');
 $file_id    = Params::getParam('fileId');
 
@@ -29,12 +29,12 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
 
         $title      = __('Add new market file', 'market');
         $submit_txt = __('Add new file', 'market');
-    
+
         //  submited form INSERT
         if(Params::getParam('plugin_action')=='done') {
             // insert new market file
             market_front_add_file($item_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible);
-            if($error) { 
+            if($error) {
                 $str_error = implode('<br/>', $aError);
 
             } else {
@@ -50,7 +50,7 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
             $file_info  = ModelMarket::newInstance()->marketFileByPrimaryKey( $file_id );
             // update file market
             market_front_update_file($item_id, $file_id, $market, &$error, &$aError, &$file_version, &$file_download_url, &$aCompatible, $file_info['s_file']);
-            if($error) { 
+            if($error) {
                 $str_error = implode('<br/>', $aError);
             } else {
                 $success     = true;
@@ -80,7 +80,7 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
             $title = __('Add new market file', 'market');
             $submit_txt = __('Add new file', 'market');
         }
-    
+
 ?>
     <style>
         label {
@@ -90,7 +90,7 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
             margin-top: 10px;
             margin-bottom: 5px;
         }
-        
+
         .input {
             display: inline-block;
             width: 208px;
@@ -118,7 +118,7 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
         <input type="hidden" name="plugin_action" value="<?php if($isEdit) { echo "edit"; } else { echo "done"; } ?>"/>
         <table>
             <tr>
-                <td valign="top"> 
+                <td valign="top">
                     <div id="market_files">
                         <div>
                             <label><?php _e('Version','market'); ?></label>
@@ -134,11 +134,11 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
                             <label><?php _e('Compatible with', 'market'); ?></label>
                             <div>
                                 <?php foreach($market_versions as $v) { ?>
-                                <?php 
+                                <?php
                                 $checked = false;
                                 if(array_search($v, $aCompatible) !== false) {
                                     $checked = true;
-                                } 
+                                }
                                 ?>
                                 <label style="display:inline;padding-right:8px;"><input style="width: 12px;display: inline-block;" <?php if($checked) { echo "checked";} ?> type="checkbox" name="market_new_comp_versions[<?php echo $v; ?>]" value="1" /> <?php echo $v; ?></label>
                                 <?php }; ?>
@@ -148,7 +148,7 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
                         <div>
                             <label><?php _e('Download file'); ?></label>
                         </div>
-                        
+
                         <ul class="nav nav-tabs" id="tabs_upload">
                             <li class="active"><a data-toggle="tab" href="#market-url"><?php _e('Download URL', 'market'); ?></a></li>
                             <li><a data-toggle="tab" href="#market-file"><?php _e('Download file', 'market'); ?></a></li>
@@ -161,7 +161,7 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
                             </div>
                             <div id="market-file" class="tab-pane">
                                 <?php if(isset($file_download_file) && !empty($file_download_file) && file_exists($file_download_file) ) { ?>
-                                <a href="<?php echo osc_base_url() . 'oc-content/plugins/market/download.php?code=';?><?php echo $market['s_slug'];?>@<?php echo $file_version;?>"><?php _e('Download attachment', 'market');?></a>
+                                <a href="<?php echo market_file_download_url($market['s_slug'], $file_version); ?>"><?php _e('Download attachment', 'market');?></a>
                                 <input type="hidden" name="market_file_exist" value="1"/>
                                 <?php } ?>
                                 <label><?php printf(__('Allowed extensions are %s. Any other file will not be uploaded', 'market'), osc_get_preference('allowed_ext', 'market')) ; ?></label>
@@ -189,20 +189,20 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
                 </div></td>
             </tr>
         </table>
-        
+
         <div class="form-actions">
             <a href="javascript:history.go(-1)" class="btn"><?php _e('Cancel', 'market')?></a>
             <input type="submit" value="<?php echo $submit_txt;?>" class="btn btn-submit">
         </div>
     </form>
-    
+
     <script type="text/javascript">
-        
+
         $('#tabs_upload a').click(function (e) {
           e.preventDefault();
           $(this).tab('show');
         })
-        
+
         <?php if($error) { $str_error = '<a class="btn ico btn-mini ico-close">x</a>'.$str_error; ?>
         $("#flashmessage").html('<?php echo $str_error;?>');
         $("#flashmessage").removeClass('flashmessage-info');
@@ -217,16 +217,16 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
         $("#flashmessage").addClass('flashmessage-ok');
         $("#flashmessage").slideDown('slow');//.delay(3000).slideUp('slow');
         scrollTo(0,0);
-        
+
         setTimeout(function() {
             window.location = "<?php echo osc_render_file_url(osc_plugin_folder(__FILE__) . 'market_manage_files.php');?>?itemId=<?php echo $item_id;?>";
         },1250);
-        
+
         <?php } ?>
-        
-        
+
+
     </script>
-</div>    
+</div>
 <?php } ?>
     <div class="wrapper" style="padding-top:10px;">
     <br/>
@@ -237,8 +237,8 @@ if ( osc_is_web_user_logged_in() && $item_id != '' && is_numeric($item_id)) {
 }
 ?>
 
-    
-<?php 
+
+<?php
 /*
  *  functions
  */

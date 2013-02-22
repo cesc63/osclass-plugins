@@ -127,4 +127,12 @@
         return $size;
     }
 
+    function market_file_download_url($slug, $version = '')
+    {
+        $url = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $slug ;
+        if($version!='') {
+            $url += '@' . $version;
+        }
+        return $url;
+    }
 ?>

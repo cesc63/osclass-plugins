@@ -6,6 +6,8 @@
 
     $code = Params::getParam('code') ;
 
+    error_log('Api market ... ');
+
     if( $code != '' ) {
 
         if( preg_match('|(.+)@([A-Za-z0-9\.-]+)$|', $code, $m) ) {
@@ -19,12 +21,9 @@
         $file = ModelMarket::newInstance()->getFileForDownloadBySlug($slug, $version) ;
         if( !empty($file) ) {
             $osclass_version = '';
+            error_log('User agent -  >  '.$_SERVER['HTTP_USER_AGENT']);
             if(isset($_SERVER['HTTP_USER_AGENT'])) {
-                error_log($_SERVER['HTTP_USER_AGENT']);
                 if(preg_match("|Osclass \(v\.([0-9]+)\)|", $_SERVER['HTTP_USER_AGENT'], $match)) {
-                    //
-                    // @TODO incrementar contador de descargas desde oc-admin market pages!
-                    //
                     $osclass_version = $match[1];
                     error_log('-> FROM oc-admin [' . $osclass_version . ']');
                 } else {
