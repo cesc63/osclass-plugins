@@ -249,21 +249,6 @@
             }
         }
 
-        /**
-         * Make sure that item market have allways a download url.
-         *
-         * http://market.osclass.org.devel/oc-content/plugins/market/download.php?code={slug}
-         *
-         * @param type $itemId
-         * @param type $file
-         */
-        private function extendDownloadUrl( &$file )
-        {
-            if($file['s_download']=='') {
-                $file['s_download'] = osc_base_url() . 'oc-content/plugins/market/download.php?code='.$file['s_update_url'].'@'.$file['s_version'];
-            }
-        }
-
         private function extendWithImages($itemId, &$file )
         {
             // prepare s_banner_path
@@ -532,22 +517,32 @@
         /*
          * Insert new stat about a download
          */
-        public function insertStat($market_id, $file_id, $remote_host, $remote_addr, $osclass_version, $website = '') {
+        public function insertStat($market_id, $file_id, $remote_host, $remote_addr, $osclass_version) {
 
-
-            $this->dao->insert($this->getTable_Stats(), array(
-                'fk_i_market_id' => $market_id,
-                'fk_i_file_id' => $file_id,
-                's_hostname' => $remote_host,
-                's_ip' => $remote_addr,
-                'dt_date' => date('Y-m-d H:i:s'),
+            $aSet = array(
+                'fk_i_market_id'    => $market_id,
+                'fk_i_file_id'      => $file_id,
+                's_hostname'        => $remote_host,
+                's_ip'              => $remote_addr,
+                'dt_date'           => date('Y-m-d H:i:s'),
                 's_osclass_version' => $osclass_version
-            ));
+                );
+
+            // get s_country_code from ip
+            $result         = $this->dao->query("select code from ".DB_TABLE_PREFIX."t_ip_ranges where ip_from <= INET_ATON('$remote_addr') AND ip_to >= INET_ATON('$remote_addr') LIMIT 1 ");
+            $aux            = $result->row();
+            $s_country_code = '';
+            if($aux!==false && isset($aux['code']) ){
+                $aSet['s_country_code'] = $aux['code'];
+            }
+
+            // insert market stat
+            $this->dao->insert($this->getTable_Stats(), $aSet);
 
             // insert market stat ++
-            $this->increaseMarketDownload($market_id, $website);
+            $this->increaseMarketDownload($market_id, $osclass_version);
             // insert market file stat ++
-            $this->increaseMarketFileDownload($file_id, $website);
+            $this->increaseMarketFileDownload($file_id, $osclass_version);
         }
 
         /**
@@ -556,13 +551,16 @@
          * @param type $marketId
          * @return type
          */
-        public function increaseMarketDownload($id, $website)
+        public function increaseMarketDownload($id, $osclass_version)
         {
             if(!is_numeric($id)) {
                 return false;
             }
-
-            $sql = sprintf('UPDATE %s SET i_total_downloads = i_total_downloads + 1 WHERE pk_i_id = %d', $this->getTable(), $id);
+            if($osclass_version=='') {
+                $sql = sprintf('UPDATE %s SET i_total_downloads = i_total_downloads + 1 WHERE pk_i_id = %d', $this->getTable(), $id);
+            } else {
+                $sql = sprintf('UPDATE %s SET i_total_downloads = i_total_downloads + 1, i_ocadmin_downloads = i_ocadmin_downloads + 1 WHERE pk_i_id = %d', $this->getTable(), $id);
+            }
             return $this->dao->query($sql);
         }
 
@@ -572,13 +570,17 @@
          * @param type $fileId
          * @return type
          */
-        public function increaseMarketFileDownload($id)
+        public function increaseMarketFileDownload($id, $osclass_version)
         {
             if(!is_numeric($id)) {
                 return false;
             }
 
-            $sql = sprintf('UPDATE %s SET i_total_downloads = i_total_downloads + 1 WHERE pk_i_id = %d', $this->getTable_Files(), $id);
+            if($osclass_version=='') {
+                $sql = sprintf('UPDATE %s SET i_total_downloads = i_total_downloads + 1 WHERE pk_i_id = %d', $this->getTable_Files(), $id);
+            } else {
+                $sql = sprintf('UPDATE %s SET i_total_downloads = i_total_downloads + 1, i_ocadmin_downloads = i_ocadmin_downloads + 1 WHERE pk_i_id = %d', $this->getTable_Files(), $id);
+            }
             return $this->dao->query($sql);
         }
 
@@ -711,10 +713,13 @@
             if($item_id != '') { $type='all'; }
             if($date=='week') {
                 $this->dao->select('dt_date as date_time, WEEK(dt_date) as d_date, COUNT(1) as num') ;
+                $this->dao->groupBy('WEEK(a.dt_date)') ;
             } else if($date=='month') {
                 $this->dao->select('dt_date as date_time, MONTHNAME(dt_date) as d_date, COUNT(1) as num') ;
+                $this->dao->groupBy('MONTH(a.dt_date)') ;
             } else {
                 $this->dao->select('dt_date as date_time, DATE(dt_date) as d_date, COUNT(1) as num') ;
+                $this->dao->groupBy('DAY(a.dt_date)') ;
             }
 
             $this->dao->from($sql_total_downloads);
@@ -742,14 +747,7 @@
                 $this->dao->where(DB_TABLE_PREFIX.'t_item.fk_i_category_id IN ('.$aCategory.') ');
             }
 
-            if($date=='week') {
-                $this->dao->groupBy('WEEK(a.dt_date)') ;
-            } else if($date=='month') {
-                $this->dao->groupBy('MONTH(a.dt_date)') ;
-            } else {
-                $this->dao->groupBy('DAY(a.dt_date)') ;
-            }
-            $this->dao->orderBy('a.dt_date', 'ASC') ;
+            $this->dao->orderBy('a.dt_date', 'DESC') ;
 
             // get ocadmin downloads
             $result         = $this->dao->get() ;
@@ -758,13 +756,17 @@
             // get total downloads
             $this->dao->_resetSelect();
 
-            if($item_id != '') { $type='all'; }
+            // Get i_ocadmin_downloads
+
             if($date=='week') {
                 $this->dao->select('WEEK(dt_date) as d_date, COUNT(1) as num') ;
+                $this->dao->groupBy('WEEK(a.dt_date)') ;
             } else if($date=='month') {
                 $this->dao->select('MONTHNAME(dt_date) as d_date, COUNT(1) as num') ;
+                $this->dao->groupBy('MONTH(a.dt_date)') ;
             } else {
                 $this->dao->select('DATE(dt_date) as d_date, COUNT(1) as num') ;
+                $this->dao->groupBy('DAY(a.dt_date)') ;
             }
 
             $this->dao->from($sql_ocadmin_downloads);
@@ -788,28 +790,45 @@
                 $aCategory    = osc_get_preference('market_categories_languages','market');
             }
 
-             if($aCategory != null) {
+            if($aCategory != null) {
                 $this->dao->where(DB_TABLE_PREFIX.'t_item.fk_i_category_id IN ('.$aCategory.') ');
             }
 
-            if($date=='week') {
-                $this->dao->groupBy('WEEK(a.dt_date)') ;
-            } else if($date=='month') {
-                $this->dao->groupBy('MONTH(a.dt_date)') ;
-            } else {
-                $this->dao->groupBy('DAY(a.dt_date)') ;
-            }
             $this->dao->orderBy('a.dt_date', 'DESC') ;
 
             $result         = $this->dao->get() ;
             $array_ocadmin  = $result->result() ;
 
-            // merge arrays
-            foreach($array_total as $key => &$aux) {
-                $aux['ocadmin_num'] = $array_ocadmin[$key]['num'];
+            // prepare arrays
+            $_array_total   = array();
+            $_array_ocadmin = array();
+
+            foreach($array_total as $aux) {
+                $_array_total[$aux['d_date']] = $aux['num'];
             }
 
-            return $array_total;
+            foreach($array_ocadmin as $aux) {
+                $_array_ocadmin[$aux['d_date']] = $aux['num'];
+            }
+
+            // merge arrays
+            $array_merge = array();
+            foreach($_array_total as $key => $aux) {
+                $_aux = 0;
+                if(isset($_array_ocadmin[$key])) {
+                    $_aux = $_array_ocadmin[$key]['num'];
+                }
+
+                $array_merge[] = array(
+                    'd_date'        => $key,
+                    'num'           => $_array_total[$key],
+                    'ocadmin_num'   => $_aux
+                );
+            }
+
+//            error_log( print_r($array_merge , true) );
+
+            return $array_merge;
         }
 
         /*
@@ -1228,7 +1247,6 @@
                     $data[$k]['s_description'] = ($aux_description);
 
                     $this->extendWithImages($v['fk_i_item_id'], $data[$k]);
-                    $this->extendDownloadUrl( $data[$k] );
 
                     unset($data[$k]['fk_i_item_id']);
                     unset($data[$k]['fk_i_category_id']);
