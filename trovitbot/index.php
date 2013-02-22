@@ -11,6 +11,12 @@ Short Name: trovitbot
 
 osc_add_hook('feed_trovit', 'trovitbot_email');
 function trovitbot_email($items) {
+    $countries = array(
+        'CL' => 'Chile',
+        'CO' => 'Colombia',
+        'PT' => 'Portugal'
+    );
+
     if( !isset($_SERVER['HTTP_USER_AGENT']) ) {
         return false;
     }
@@ -19,17 +25,21 @@ function trovitbot_email($items) {
 
     if( preg_match('|trovitBot|', $UserAgent) ) {
         $num_items = count($items);
-        sendmail_trovitbot($num_items);
+        $country   = '';
+        if( array_key_exists(Params::getParam('sCountry'), $countries) ) {
+            $country = $countries[Params::getParam('sCountry')];
+        }
+        sendmail_trovitbot($country, $num_items);
     }
 
     return ;
 }
 
-function sendmail_trovitbot($num_items) {
+function sendmail_trovitbot($country, $num_items) {
     $params = array();
     $params['to']      = 'listings.notifications@osclass.org';
     $params['subject'] = 'Trovitbot acaba de visitar listings.trovit.com';
-    $params['body']    = sprintf('El bot de Trovit acaba de descargarse el feed de trovit a las %1$s que contiene <strong>%2$d anuncios</strong>', date('Y-m-d H:i:s'), $num_items);
+    $params['body']    = sprintf('El bot de Trovit acaba de descargarse el feed de <strong>Trovit %1$s</strong> a las %2$s que contiene <strong>%3$d anuncios</strong>', $country, date('Y-m-d H:i:s'), $num_items);
     osc_sendMail($params);
 }
 // End of file: ./trovitbot/index.php
