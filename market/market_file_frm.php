@@ -250,6 +250,10 @@ if(!isset($item_id) || !is_numeric($item_id)) {
 
         <?php } ?>
 
+        $(function() {
+            $( "#tabs_files" ).tabs();
+        });
+
         var ufIndex = 0;
         function gebi(id) { return document.getElementById(id); }
         function ce(name) { return document.createElement(name); }
