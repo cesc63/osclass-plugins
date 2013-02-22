@@ -138,6 +138,8 @@ function market_stats_all($type, $item_id)
                 echo "data.setValue(" . $i . ", 1, " . $total . ");";
                 echo "data.setValue(" . $i . ", 2, " . $ocadmin . ");";
                 $i++;
+
+                $acomulate += $total;
             }
             ?>
 
