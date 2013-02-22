@@ -170,7 +170,7 @@ Plugin update URI:
             FIELDS TERMINATED BY ','
             ENCLOSED BY '\"'
             LINES TERMINATED BY '\n'", $abs_path_to_geoip, DB_TABLE_PREFIX));
-//
+
 //            // fill s_country_code using geoiplite
 //            // @todo, segmentar las actualizaciones para no petar el sevidor ni tener que
 //
@@ -760,7 +760,7 @@ Plugin update URI:
                 $return = ModelMarket::newInstance()->featuredOff(Params::getParam('itemId'));
             }
         }
-        
+
         if($return) {
             osc_add_flash_ok_message(__('Listing Featured successfully', 'market'), 'admin');
         } else {
@@ -867,35 +867,25 @@ Plugin update URI:
                 $aError[] = __('File version incorrect format, ex: 1.2.3 (Cannot )', 'market');
             }
         }
-        // download url OR download file
+        // download file
         $info_img           = Params::getFiles('market_file_new');
-        $file_download_url  = Params::getParam('market_download_url');
-        if($file_download_url == '' && $info_img['name'] == '') {
-            $error = true;
-            $aError[] = __('At least one download file must be specified', 'market');
-        }
-        // compatible versions
-        $aCompatible = Params::getParam('market_new_comp_versions');
 
+        if($info_img['name'] == '') {
+            $error = true;
+            $aError[] = __('File must be uploaded', 'market');
+        }
+
+        $aCompatible = Params::getParam('market_new_comp_versions');
         if( !is_array($aCompatible) || count($aCompatible) == 0) {
             $aCompatible = array();
             $error = true;
             $aError[] = __('At least one compatible version must be specified', 'market');
-        }  else {
-            $aCompatible = array_keys($aCompatible);
         }
 
         if(!$error) {
             // UPLOAD NEW FILE
             $file = Params::getFiles('market_file_new');
-            if($file_download_url != '') {
-                ModelMarket::newInstance()->insertFile($item_id, '', Params::getParam('market_download_url'), $file_version, Params::getParam('market_new_comp_versions'), $status);
-                // no errors, update item dt_mod_date
-                Item::newInstance()->update(
-                        array('dt_mod_date' => date('Y-m-d H:i:s') ),
-                        array('pk_i_id' => $market_id)
-                        );
-            } else if (isset($file['error']) && $file['error'] == UPLOAD_ERR_OK) {
+            if (isset($file['error']) && $file['error'] == UPLOAD_ERR_OK) {
                 // upload file market
                 $result = _market_upload_market_file( $item_id, $file , $aError, $error);
                 // insert
@@ -905,7 +895,7 @@ Plugin update URI:
                     // no errors, update item dt_mod_date
                     Item::newInstance()->update(
                         array('dt_mod_date' => date('Y-m-d H:i:s') ),
-                        array('pk_i_id' => $market_id)
+                        array('pk_i_id' => $item_id)
                         );
                 }
             }
@@ -920,14 +910,15 @@ Plugin update URI:
         // download url OR download file
         $haveFile           = Params::getParam('market_file_exist');
         $file               = Params::getFiles('market_file_new');
-        $file_download_url  = Params::getParam('market_download_url');
-        if($haveFile != 1) {
-            if($file_download_url == '' && $file['name'] == '') {
 
+        if($haveFile != 1) {
+            if( $file['name'] == '') {
                 $error = true;
                 $aError[] = __('At least one download file must be specified', 'market');
             }
         }
+
+        $aSet = array();
 
         // compatible versions
         $aCompatible = Params::getParam('market_new_comp_versions');
@@ -937,67 +928,40 @@ Plugin update URI:
             $aError[] = __('At least one compatible version must be specified', 'market');
         } else {
             $aCompatible = array_keys($aCompatible);
+            $aSet['s_compatible'] = implode(",", $aCompatible);
         }
 
         if( !$error ) {
             $result     = false;
             $market_id  = ModelMarket::newInstance()->marketExists($item_id);
-            // UPLOAD NEW FILE
-            if($file_download_url != '') {
-                $aSet = array(
-                    's_download'    => $file_download_url,
-                    's_compatible'  => implode(",", $aCompatible),
-                    's_file'        => ''
-                );
 
-                $result = ModelMarket::newInstance()->updateFile($market_id, $file_id, $aSet );
-                if($result && $haveFile) {
-                    @unlink($path);
+            if (isset($file['error']) && $file['error'] == UPLOAD_ERR_OK) {
+                // upload file market
+                $result = _market_upload_market_file( $item_id, $file , $aError, $error);
+                // insert
+                if( !$result['error'] ) {
+                    $aSet['s_file']  =  $result['msg'];
                 }
-            } else if (isset($file['error']) ) {
-                if($file['error'] == UPLOAD_ERR_OK) {
-                    // upload file market
-                    $result = _market_upload_market_file( $item_id, $file , $aError, $error);
-                    // insert
-                    if( !$result['error'] ) {
-                        $path = $result['msg'];
-                        $aSet = array(
-                            's_file'        => $path,
-                            's_compatible'  => implode(",", $aCompatible),
-                            's_download'    => ''
-                        );
-                        $result = ModelMarket::newInstance()->updateFile($market_id, $file_id, $aSet );
-                    }
-                } else if($file['error'] == UPLOAD_ERR_INI_SIZE) {
-                    $error = true;
-                    $aError[] = __('Exceeded max file size', 'market');
-                } else {
-                    error_log('entra donde no tiene que entrar ');
-                    $result = true;
-                }
-            } else if($haveFile == '1') {
-
-                error_log('_market_update_files haveFile = 1');
-                $aSet = array(
-                    's_compatible'  => implode(",", $aCompatible),
-                    's_download'    => ''
-                );
-                $result = ModelMarket::newInstance()->updateFile($market_id, $file_id, $aSet );
-            }
-
-            error_log('$haveFile '.$haveFile);
-
-            if(!$result) {
+            } else if($file['error'] == UPLOAD_ERR_INI_SIZE) {
                 $error = true;
-                $aError[] = __('There are problems updating file market', 'market');
-            } else {
-                // no errors, update item dt_mod_date
-                Item::newInstance()->update(
-                        array('dt_mod_date' => date('Y-m-d H:i:s') ),
-                        array('pk_i_id' => $item_id)
-                        );
+                $aError[] = __('Exceeded max file size', 'market');
             }
+            // update
+            error_log( "_market_update_file " . print_r($aSet, true) );
+            $result = ModelMarket::newInstance()->updateFile($market_id, $file_id, $aSet );
         }
+
+        if(!$result) {
+            $error = true;
+            $aError[] = __('There are problems updating file market', 'market');
+        } else {
+            // no errors, update item dt_mod_date
+            Item::newInstance()->update(
+                    array('dt_mod_date' => date('Y-m-d H:i:s') ),
+                    array('pk_i_id' => $item_id)
+                    );
+        }
+
     }
 
     function _market_upload_market_file( $item_id, $file, $aError, $error ) {
@@ -1024,11 +988,18 @@ Plugin update URI:
         $size = $file['size'];
         if($size <= $maxSize) {
             $fileMime = $file['type'] ;
-
             if(in_array($fileMime,$aMimesAllowed)) {
+                // category item
+                $item       = Item::newInstance()->findByPrimaryKey( $item_id );
+                $aItem[]    = $item;
+                $aItem      = Item::newInstance()->extendCategoryName($aItem);
+                $item       = $aItem[0];
+
                 $date = date('YmdHis');
                 $file_name = $date.'_'.$item_id.'_'.$file['name'];
-                $path = osc_get_preference('upload_path', 'market').$file_name;
+                $path = osc_get_preference('upload_path', 'market').$item['s_category_name'].'/'.$file_name;
+
+
                 if (move_uploaded_file($file['tmp_name'], $path)) {
 
                     return array('error' => false, 'msg' => $path);
