@@ -660,15 +660,22 @@
             }
         }
 
-        public function getDownloadsByCountry($type = 'all', $from_date = '')
+        public function getDownloadsByCountry($type = 'all', $from_date = '', $ocadmin = false)
         {
             $this->dao->select('s_country_code, COUNT(*) as num');
             $this->dao->from(DB_TABLE_PREFIX."t_market_stats") ;
             $this->dao->join(DB_TABLE_PREFIX.'t_market', DB_TABLE_PREFIX.'t_market.pk_i_id = '.DB_TABLE_PREFIX.'t_market_stats.fk_i_market_id');
             $this->dao->join(DB_TABLE_PREFIX.'t_item', DB_TABLE_PREFIX.'t_item.pk_i_id = '.DB_TABLE_PREFIX.'t_market.fk_i_item_id');
             if($from_date!='') {
-                $this->dao->where("dt_date > '$from_date'") ;
+                $this->dao->where("dt_date > '$from_date' ") ;
             }
+
+            if($ocadmin) {
+                $this->dao->where(DB_TABLE_PREFIX.'t_market_stats.s_osclass_version <> "" ');
+            } else {
+                $this->dao->where(DB_TABLE_PREFIX.'t_market_stats.s_osclass_version = "" ' );
+            }
+
             $this->dao->groupBy('s_country_code') ;
 
              $aCategory = null;
@@ -687,6 +694,7 @@
                 $this->dao->where(DB_TABLE_PREFIX.'t_item.fk_i_category_id IN ('.$aCategory.') ');
             }
 
+            error_log($this->dao->_getSelect());
             $result = $this->dao->get();
             if($result!==false) {
                 return $result->result();
@@ -796,7 +804,10 @@
 
             $this->dao->orderBy('a.dt_date', 'DESC') ;
 
+
             $result         = $this->dao->get() ;
+
+
             $array_ocadmin  = $result->result() ;
 
             // prepare arrays
@@ -811,12 +822,13 @@
                 $_array_ocadmin[$aux['d_date']] = $aux['num'];
             }
 
+
             // merge arrays
             $array_merge = array();
             foreach($_array_total as $key => $aux) {
                 $_aux = 0;
                 if(isset($_array_ocadmin[$key])) {
-                    $_aux = $_array_ocadmin[$key]['num'];
+                    $_aux = $_array_ocadmin[$key];
                 }
 
                 $array_merge[] = array(

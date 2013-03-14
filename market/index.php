@@ -353,11 +353,11 @@ Plugin update URI:
             }
 
             $aSize = market_banner_size($catId);
-            error_log( 'market antes de rellenar con los datos de la session  ' . print_r($market, true) );
+//            error_log( 'market antes de rellenar con los datos de la session  ' . print_r($market, true) );
             // session variables
             $detail = get_market_session_variables($market);
             View::newInstance()->_exportVariableToView("market_ad", $detail);
-            error_log(print_r($detail, true));
+//            error_log(print_r($detail, true));
 
             unset($market_item);
             include_once( MARKET_PLUGIN_PATH . 'item_edit.php' ) ;
@@ -754,7 +754,7 @@ Plugin update URI:
         $return = false;
         $item = Item::newInstance()->findByPrimaryKey(Params::getParam('itemId'));
         if($item!== FALSE ) {
-            error_log($item['s_secret'].'    ==    '.Params::getParam('secret') );
+//            error_log($item['s_secret'].'    ==    '.Params::getParam('secret') );
             if($item['s_secret'] == Params::getParam('secret')) {
 
                 $return = ModelMarket::newInstance()->featuredOff(Params::getParam('itemId'));
@@ -775,7 +775,7 @@ Plugin update URI:
         $return = false;
         $item = Item::newInstance()->findByPrimaryKey(Params::getParam('itemId'));
         if($item!== FALSE ) {
-            error_log($item['s_secret'].'    ==    '.Params::getParam('secret') );
+//            error_log($item['s_secret'].'    ==    '.Params::getParam('secret') );
             if($item['s_secret'] == Params::getParam('secret')) {
                 $return = ModelMarket::newInstance()->featuredOn(Params::getParam('itemId'));
             }
@@ -947,7 +947,7 @@ Plugin update URI:
                 $aError[] = __('Exceeded max file size', 'market');
             }
             // update
-            error_log( "_market_update_file " . print_r($aSet, true) );
+//            error_log( "_market_update_file " . print_r($aSet, true) );
             $result = ModelMarket::newInstance()->updateFile($market_id, $file_id, $aSet );
         }
 

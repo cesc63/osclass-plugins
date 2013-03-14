@@ -108,8 +108,8 @@
     function market_banner_size($categoryId) {
 
         $aSizes = array(
-            'plugins'       => array('w' => 624, 'h' => 224),
-            'themes'        => array('w' => 400, 'h' => 400),
+            'plugins'       => array('w' => 400, 'h' => 400),
+            'themes'        => array('w' => 624, 'h' => 224),
             'languages'     => array('w' => 400, 'h' => 400)
         );
 
@@ -118,9 +118,9 @@
         $aCategoryLanguages     = explode(',', osc_get_preference('market_categories_languages','market'));
 
         if( in_array($categoryId, $aCategoryThemes) ) {
-            $size = $aSizes['plugins'];
-        } else if( in_array($categoryId, $aCategoryLanguages) ) {
             $size = $aSizes['themes'];
+        } else if( in_array($categoryId, $aCategoryLanguages) ) {
+            $size = $aSizes['plugins'];
         } else {
             $size = $aSizes['languages'];
         }
@@ -131,7 +131,7 @@
     {
         $url = osc_base_url() . 'oc-content/plugins/market/download.php?code=' . $slug ;
         if($version!='') {
-            $url += '@' . $version;
+            $url .= '@' . $version;
         }
         return $url;
     }

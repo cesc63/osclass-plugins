@@ -23,7 +23,8 @@
 
     // ------------------------------
 
-    $country_downloads  = ModelMarket::newInstance()->getDownloadsByCountry('all', date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m") - 10, date("d"), date("Y")) )) ;
+    $country_downloads          = ModelMarket::newInstance()->getDownloadsByCountry('all', date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m") , date("d")-7, date("Y")) ), false) ;
+    $country_downloads_ocadmin  = ModelMarket::newInstance()->getDownloadsByCountry('all', date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m") , date("d")-7, date("Y")) ), true) ;
 
 ?>
 </div>
@@ -76,15 +77,26 @@
     <div class="grid-row grid-100">
         <div class="row-wrapper">
             <div class="widget-box">
-                <div class="widget-box-title">
-                    <h3><?php _e('Downloads by Country', 'market'); ?></h3>
+                <div class="widget-box-title"><h3 class="has-tabs"><?php _e('Downloads by Country', 'market'); ?></h3>
+                    <ul class="tabs">
+                        <li><a href="#geodownloads-web" data-callback="repaint_geo_web"><?php _e('website', 'market'); ?></a></li>
+                        <li><a href="#geodownloads-ocadmin" data-callback="repaint_geo_ocadmin"><?php _e('oc-admin', 'market');?></a></li>
+                    </ul>
                 </div>
                 <div class="widget-box-content" style="height: 500px;">
-                    <b class="stats-title"></b>
-                    <div id="placeholder_map" class="graph-placeholder" style="width:100%; height: 100%;">
-                        <?php if( count($country_downloads) == 0 ) {
-                            _e("There're no statistics yet") ;
-                        } ?>
+                    <div id="geodownloads-web" style="height: 500px;width:1100px;">
+                        <div id="placeholder_map" class="" style="height: 500px;width:1100px;">
+                            <?php if( count($country_downloads) == 0 ) {
+                                _e("There're no statistics yet") ;
+                            } ?>
+                        </div>
+                    </div>
+                    <div id="geodownloads-ocadmin" style="height: 500px;width:1100px;">
+                        <div id="placeholder_map_ocadmin" class="" style="height: 500px;width:1100px;">
+                            <?php if( count($country_downloads_ocadmin) == 0 ) {
+                                _e("There're no statistics yet") ;
+                            } ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -166,7 +178,19 @@ $(document).ready(function(){
 
         $(this).click(function(){
             $(this).parent().children().removeClass('active').filter($(this).addClass('active'));
-            $(dest($(this))).hide().filter($(this).children().attr('href')).show();
+            $that = $(this);
+            $(dest($(this))).hide().filter($(this).children().attr('href')).show(0,function(){
+                console.log('click   '+$that.children().attr('data-callback'));
+                 eval( $that.children().attr('data-callback') );
+
+            });
+
+
+//            setTimeout(function(){
+//                alert("Hello")
+//            },)
+
+
             return false;
         });
     }).filter(':first').click();
@@ -207,6 +231,39 @@ $(document).ready(function(){
         var options = {};
 
         var chart = new google.visualization.GeoChart(document.getElementById('placeholder_map'));
+        chart.clearChart();
+        chart.draw(data, options);
+    }
+</script>
+
+<script type="text/javascript">
+
+    google.load('visualization', '1', {'packages': ['geochart']});
+    google.setOnLoadCallback(drawRegionsMapAdmin);
+
+    /* country map */
+    function drawRegionsMapAdmin()
+    {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', '<?php echo osc_esc_js(__('Country')); ?>');
+        data.addColumn('number', '<?php echo osc_esc_js(__('Total downloads')); ?>');
+
+        <?php
+        $acomulate = 0 ;
+        $k = 0 ;
+        echo "data.addRows(" . count($country_downloads_ocadmin) . ");" ;
+
+        foreach($country_downloads_ocadmin as $k => $aux) {
+            echo "data.setValue(" . $k . ', 0, "' . $aux['s_country_code']. '");';
+            echo "data.setValue(" . $k . ", 1, " . $aux['num'] . ");";
+        }
+        ?>
+
+        console.log('drawRegionsMapAdmin  ..... ');
+        var options = {};
+
+        var chart = new google.visualization.GeoChart(document.getElementById('placeholder_map_ocadmin'));
+        chart.clearChart();
         chart.draw(data, options);
     }
 </script>
@@ -265,6 +322,20 @@ $(document).ready(function(){
           });
     }
 </script>
+
+<script type="text/javascript">
+
+    function repaint_geo_web() {
+        drawRegionsMap();
+    }
+
+    function repaint_geo_ocadmin() {
+        drawRegionsMapAdmin();
+    }
+
+</script>
+
+
 
     <div class="grid-row grid-first-row grid-100">
         <div class="row-wrapper">
