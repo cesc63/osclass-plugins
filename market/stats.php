@@ -40,6 +40,7 @@ if( $type == '') {
 $items = array();
 $items = market_stats_all($type, $item_id);
 
+
 $from_date = date('Y-m-d H:i:s');
 if( Params::getParam('type_stat') == 'week' ) {
     $from_date = date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m"), date("d") - 70, date("Y")) );
@@ -48,7 +49,6 @@ if( Params::getParam('type_stat') == 'week' ) {
 } else {
     $from_date = date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m"), date("d") - 10, date("Y")) );
 }
-
 
 
 // all -> plugin top 10 , themes top 10
@@ -71,7 +71,7 @@ function market_stats_all($type, $item_id)
     if( Params::getParam('type_stat') == 'week' ) {
         $stats_items = ModelMarket::newInstance()->getAllStats(date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m"), date("d") - 70, date("Y")) ),'week',$type, $item_id) ;
         for($k = 10; $k >= 0; $k--) {
-            $items[date( 'W', mktime(0, 0, 0, date("m"), date("d"), date("Y")) ) - $k] = 0 ;
+            $items[date( 'W', mktime(0, 0, 0, date("m"), date("d") - ($k*7), date("Y")) ).'-'.date( 'Y', mktime(0, 0, 0, date("m"), date("d") - ($k*7), date("Y")) )] = 0 ;
         }
     } else if( Params::getParam('type_stat') == 'month' ) {
         $stats_items = ModelMarket::newInstance()->getAllStats(date( 'Y-m-d H:i:s',  mktime(0, 0, 0, date("m") - 10, date("d"), date("Y")) ),'month',$type, $item_id) ;

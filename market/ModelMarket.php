@@ -694,7 +694,7 @@
                 $this->dao->where(DB_TABLE_PREFIX.'t_item.fk_i_category_id IN ('.$aCategory.') ');
             }
 
-            error_log($this->dao->_getSelect());
+
             $result = $this->dao->get();
             if($result!==false) {
                 return $result->result();
@@ -720,8 +720,8 @@
 
             if($item_id != '') { $type='all'; }
             if($date=='week') {
-                $this->dao->select('dt_date as date_time, WEEK(dt_date) as d_date, COUNT(1) as num') ;
-                $this->dao->groupBy('WEEK(a.dt_date)') ;
+                $this->dao->select('dt_date as date_time, WEEK(dt_date, 3) as d_date, COUNT(1) as num') ;
+                $this->dao->groupBy('WEEK(a.dt_date, 3)') ;
             } else if($date=='month') {
                 $this->dao->select('dt_date as date_time, MONTHNAME(dt_date) as d_date, COUNT(1) as num') ;
                 $this->dao->groupBy('MONTH(a.dt_date)') ;
@@ -767,13 +767,13 @@
             // Get i_ocadmin_downloads
 
             if($date=='week') {
-                $this->dao->select('WEEK(dt_date) as d_date, COUNT(1) as num') ;
-                $this->dao->groupBy('WEEK(a.dt_date)') ;
+                $this->dao->select('WEEK(dt_date, 3) as d_date, COUNT(1) as num, dt_date as date_time') ;
+                $this->dao->groupBy('WEEK(a.dt_date, 3)') ;
             } else if($date=='month') {
-                $this->dao->select('MONTHNAME(dt_date) as d_date, COUNT(1) as num') ;
+                $this->dao->select('MONTHNAME(dt_date) as d_date, COUNT(1) as num, dt_date as date_time') ;
                 $this->dao->groupBy('MONTH(a.dt_date)') ;
             } else {
-                $this->dao->select('DATE(dt_date) as d_date, COUNT(1) as num') ;
+                $this->dao->select('DATE(dt_date) as d_date, COUNT(1) as num, dt_date as date_time') ;
                 $this->dao->groupBy('DAY(a.dt_date)') ;
             }
 
@@ -815,13 +815,12 @@
             $_array_ocadmin = array();
 
             foreach($array_total as $aux) {
-                $_array_total[$aux['d_date']] = $aux['num'];
+                $_array_total[$aux['d_date']] = array('num' => $aux['num'], 'date_time' => $aux['date_time']);
             }
 
             foreach($array_ocadmin as $aux) {
-                $_array_ocadmin[$aux['d_date']] = $aux['num'];
+                $_array_ocadmin[$aux['d_date']] =  array('num' => $aux['num'], 'date_time' => $aux['date_time']);
             }
-
 
             // merge arrays
             $array_merge = array();
@@ -830,16 +829,20 @@
                 if(isset($_array_ocadmin[$key])) {
                     $_aux = $_array_ocadmin[$key];
                 }
+                $d_date = $key;
+                if($date == 'week') {
+                    $_key = $key;
+                    if(strlen($key)==1) $_key = '0'.$key;
+                    $d_date = $_key.'-'.date( 'Y', mktime(0, 0, 0, date("m"), date("d") - (($key-1)*7), date("Y")) ) ;
+                }
 
                 $array_merge[] = array(
-                    'd_date'        => $key,
-                    'num'           => $_array_total[$key],
-                    'ocadmin_num'   => $_aux
+                    'date_time'     => $_array_total[$key]['date_time'],
+                    'd_date'        => $d_date,
+                    'num'           => $_array_total[$key]['num'],
+                    'ocadmin_num'   => $_aux['num']
                 );
             }
-
-//            error_log( print_r($array_merge , true) );
-
             return $array_merge;
         }
 
