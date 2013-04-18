@@ -8,10 +8,6 @@
         $market['files'][0] = ModelMarket::newInstance()->getFileFromItem( $item_id );
         View::newInstance()->_exportVariableToView("market_ad", $market);
     }
-
-    $admin_email    = osc_logged_admin_email();
-    $admin_user     = osc_logged_admin_name();
-
 ?>
 <style>
     .input {
@@ -116,11 +112,6 @@
 
 <script type="text/javascript">
         function repaint_photos() {
-            $('#right-side').hide();
-            $('#left-side').attr('id', '');
-            // set default user / email
-            $('input#contactName').val('<?php echo osc_esc_js($admin_user); ?>');
-            $('input#contactEmail').val('<?php echo osc_esc_js($admin_email); ?>');
 
             // move category dropdowns
             var category_div = $('div.category');

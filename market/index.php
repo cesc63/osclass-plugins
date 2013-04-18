@@ -657,7 +657,6 @@ Plugin update URI:
         $(document).ready(function(){
             // remove right-side
             $('#right-side').hide();
-            $('#left-side').attr('id', '');
             // complete with some information
             $('h2.render-title').text('<?php echo $title; ?>');
 
@@ -691,16 +690,14 @@ Plugin update URI:
         $error_step_1   = __('All fields are required', 'market');
         $s_screenshots  = __('Screenshots', 'market');
 
-        $admin_email    = osc_logged_admin_email();
-        $admin_user     = osc_logged_admin_name();
+        $admin_email    = 'market@osclass.org';
+        $admin_user     = 'Osclass';
 
     ?>
         <script type="text/javascript">
             $(document).ready(function(){
             <?php if(Params::getParam('page')=='items' && Params::getParam('action')=='post') { ?>
-                // set default user / email
-                $('input#contactName').val('<?php echo osc_esc_js($admin_user); ?>');
-                $('input#contactEmail').val('<?php echo osc_esc_js($admin_email); ?>');
+
                 // button next step
                 var next_btn = $('<input class="btn btn-primary next-step" type="button"/>').val('<?php echo osc_esc_js($next_step); ?>');
 
@@ -717,12 +714,14 @@ Plugin update URI:
 
                 $('div.form-actions').append(next_btn);
             <?php } else if(Params::getParam('page')=='items' && Params::getParam('action')=='item_edit') { ?>
-
+                
             <?php } ?>
             });
 
             function step_two() {
-                console.log('step two');
+
+                //show again right side
+                $('#right-side').show();
                 // update title
                 $('h2.render-title').text($('h2.render-title').text()+'<?php echo $s_step_2; ?>');
 
